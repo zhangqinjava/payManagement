@@ -1,0 +1,10 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /account/
+spring:
+  application:
+    name: account-module
+  profiles:
+    active: dev
+
