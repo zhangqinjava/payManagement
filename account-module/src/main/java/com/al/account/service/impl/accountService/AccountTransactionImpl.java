@@ -10,10 +10,14 @@ import com.al.account.mapper.AccountFlowMapper;
 import com.al.account.mapper.AccountMapper;
 import com.al.account.mapper.AccountOpenMapper;
 import com.al.common.business.BusiEnum;
+import com.al.common.business.Common;
 import com.al.common.exception.BusinessException;
 import com.al.common.result.ResultEnum;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import jodd.time.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -27,6 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -37,6 +42,8 @@ public class AccountTransactionImpl {
     private AccountMapper accountMapper;
     @Autowired
     private AccountFlowMapper accountFlowMapper;
+    @Autowired
+    private RedissonClient redissonClient;
 
     @Transactional(rollbackFor = Exception.class,timeout = 30)
     public String save(AccountDto accountDto) throws Exception{
@@ -122,43 +129,48 @@ public class AccountTransactionImpl {
         return "更新成功";
     }
     @Transactional(rollbackFor = Exception.class,timeout = 30)
-    public  AccountUpVo up( AccountUpDto accountUpDto,AccountVo accountVo) throws Exception{
+    public AccountUpVo up( AccountUpDto accountUpDto,AccountVo accountVo) throws Exception{
+        RLock lock = redissonClient.getLock("account_banlance_lock" + accountUpDto.getFlowNo());
         try{
-            int rows = accountMapper.update(
-                    null,
-                    Wrappers.lambdaUpdate(AccountVo.class)
-                            .eq(AccountVo::getAccountNo, accountUpDto.getAccountNo())
-                            // 方式一：直接拼接字符串 (数值类型是安全的)
-                            .setSql("balance = balance + " + accountUpDto.getAmount())
-                            .setSql("available_balance = available_balance + " + accountUpDto.getAmount())
-            );
-            if(rows==0){
-                throw new BusinessException(ResultEnum.ERROR.getCode(), "数据库更新失败");
+            if(lock.tryLock(10, TimeUnit.SECONDS)) {
+                int rows = accountMapper.update(
+                        null,
+                        Wrappers.lambdaUpdate(AccountVo.class)
+                                .eq(AccountVo::getAccountNo, accountUpDto.getAccountNo())
+                                // 方式一：直接拼接字符串 (数值类型是安全的)
+                                .setSql("balance = balance + " + accountUpDto.getAmount())
+                                .setSql("available_balance = available_balance + " + accountUpDto.getAmount())
+                );
+                if (rows == 0) {
+                    throw new BusinessException(ResultEnum.ERROR.getCode(), "数据库更新失败");
+                }
+                List<AccountVo> accountVos = accountMapper.selectList(Wrappers.lambdaQuery(AccountVo.class).eq(AccountVo::getAccountNo, accountUpDto.getAccountNo()));
+                AccountVo result = accountVos.get(0);
+                log.info("账户更新后的结果:{}", result);
+                AccountFlowVo build = AccountFlowVo.builder()
+                        .flowNo(accountUpDto.getFlowNo())
+                        .curBalance(result.getBalance())
+                        .bizType(accountUpDto.getBizType())
+                        .fundDirection(BusiEnum.FUN_DIRECTION_C.getCode())
+                        .funCode(accountUpDto.getFunCode())
+                        .storeId(accountUpDto.getStoreId())
+                        .amount(accountUpDto.getAmount())
+                        .bizOrderNo(accountUpDto.getBizOrderNo())
+                        .createTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS", Locale.ROOT)))
+                        .updateTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ROOT)))
+                        .build();
+                accountFlowMapper.insert(build);
+                AccountUpVo accountUpVo = AccountUpVo.builder().accountNo(accountUpDto.getAccountNo())
+                        .accountType(result.getAccountType())
+                        .funCode(accountUpDto.getFunCode())
+                        .amount(accountUpDto.getAmount())
+                        .bizType(accountUpDto.getBizType())
+                        .channel_code(accountUpDto.getChannelCode())
+                        .curAmount(result.getBalance()).build();
+                return accountUpVo;
+            }else{
+                throw new BusinessException(ResultEnum.ERROR.getCode(), "系统繁忙，请稍后再试");
             }
-            List<AccountVo> accountVos = accountMapper.selectList(Wrappers.lambdaQuery(AccountVo.class).eq(AccountVo::getAccountNo, accountUpDto.getAccountNo()));
-            AccountVo result = accountVos.get(0);
-            log.info("账户更新后的结果:{}",result);
-            AccountFlowVo build = AccountFlowVo.builder()
-                    .flowNo(accountUpDto.getFlowNo())
-                    .curBalance(result.getBalance())
-                    .bizType(accountUpDto.getBizType())
-                    .fundDirection(BusiEnum.FUN_DIRECTION_C.getCode())
-                    .funCode(accountUpDto.getFunCode())
-                    .storeId(accountUpDto.getStoreId())
-                    .amount(accountUpDto.getAmount())
-                    .bizOrderNo(accountUpDto.getBizOrderNo())
-                    .createTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS", Locale.ROOT)))
-                    .updateTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ROOT)))
-                    .build();
-            accountFlowMapper.insert(build);
-            AccountUpVo accountUpVo = AccountUpVo.builder().accountNo(accountUpDto.getAccountNo())
-                    .accountType(result.getAccountType())
-                    .funCode(accountUpDto.getFunCode())
-                    .amount(accountUpDto.getAmount())
-                    .bizType(accountUpDto.getBizType())
-                    .channel_code(accountUpDto.getChannelCode())
-                    .curAmount(result.getBalance()).build();
-            return accountUpVo;
         }catch (Exception e){
             log.error("transaction operation up banlance exception:{}",e.getMessage());
             if(e instanceof DuplicateKeyException){
@@ -166,7 +178,8 @@ public class AccountTransactionImpl {
             }else{
                 throw e;
             }
+        }finally {
+            lock.unlock();
         }
-
     }
 }
