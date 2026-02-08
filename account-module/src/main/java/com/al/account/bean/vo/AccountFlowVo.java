@@ -29,6 +29,7 @@ public class AccountFlowVo {
    private BigDecimal amount;
    private BigDecimal  curBalance;
    private String  fundDirection;
+   private String  funCode;
    private String  createTime;
    private String  updateTime;
 }
