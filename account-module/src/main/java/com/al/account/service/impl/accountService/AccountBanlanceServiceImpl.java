@@ -25,6 +25,8 @@ import java.util.List;
 public class AccountBanlanceServiceImpl implements AccountBanlanceService {
     @Autowired
     private AccountMapper accountMapper;
+    @Autowired
+    private AccountTransactionImpl accountTransactionImpl;
     @Override
     public AccountUpVo up(AccountUpDto accountUpDto) throws Exception {
         try {
@@ -36,8 +38,8 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
             AccountVo accountVo = accountVos.get(0);
             checkParam(accountVo);
             log.info("account infomation check completed:{}", accountVo);
-
-            return null;
+            AccountUpVo up = accountTransactionImpl.up(accountUpDto, accountVo);
+            return up;
         }catch (Exception e){
             log.error("account banlance up exception:{}", e.getMessage());
             throw e;

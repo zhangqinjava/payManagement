@@ -122,7 +122,7 @@ public class AccountTransactionImpl {
         return "更新成功";
     }
     @Transactional(rollbackFor = Exception.class,timeout = 30)
-    public  AccountUpDto up( AccountUpDto accountUpDto,AccountVo accountVo) throws Exception{
+    public  AccountUpVo up( AccountUpDto accountUpDto,AccountVo accountVo) throws Exception{
         try{
             int rows = accountMapper.update(
                     null,
@@ -151,13 +151,21 @@ public class AccountTransactionImpl {
                     .updateTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ROOT)))
                     .build();
             accountFlowMapper.insert(build);
-            return null;
+            AccountUpVo accountUpVo = AccountUpVo.builder().accountNo(accountUpDto.getAccountNo())
+                    .accountType(result.getAccountType())
+                    .funCode(accountUpDto.getFunCode())
+                    .amount(accountUpDto.getAmount())
+                    .bizType(accountUpDto.getBizType())
+                    .channel_code(accountUpDto.getChannelCode())
+                    .curAmount(result.getBalance()).build();
+            return accountUpVo;
         }catch (Exception e){
             log.error("transaction operation up banlance exception:{}",e.getMessage());
             if(e instanceof DuplicateKeyException){
                 throw new BusinessException(ResultEnum.ERROR.getCode(),"流水号重复");
+            }else{
+                throw e;
             }
-            throw e;
         }
 
     }
