@@ -1,7 +1,6 @@
-package com.common.exception;
+package com.al.common.exception;
 
-import com.common.result.Result;
-import com.common.result.ResultEnum;
+import com.al.common.result.Result;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

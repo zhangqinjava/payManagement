@@ -1,4 +1,4 @@
-package com.common.result;
+package com.al.common.result;
 
 public enum ResultEnum {
     SUCESS(200, "success"),

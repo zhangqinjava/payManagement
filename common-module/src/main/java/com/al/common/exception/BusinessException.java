@@ -1,4 +1,4 @@
-package com.common.exception;
+package com.al.common.exception;
 
 import java.security.PrivilegedActionException;
 
