@@ -7,4 +7,6 @@ spring:
     name: account-module
   profiles:
     active: dev
-
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true

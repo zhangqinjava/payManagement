@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>account-module</module>
+        <module>common-module</module>
     </modules>
 
     <properties>
@@ -18,19 +19,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql-version>8.0.33</mysql-version>
         <mybaties-plus-version>3.5.1</mybaties-plus-version>
+        <common-module-varsion>1.0-SNAPSHOT</common-module-varsion>
+        <fast-json-version>2.0.27</fast-json-version>
     </properties>
-    <dependencies>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${mysql-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>${mybaties-plus-version}</version>
-        </dependency>
-    </dependencies>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -53,6 +44,26 @@
                 <version>2021.0.3</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>${mybaties-plus-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ai</groupId>
+                <artifactId>common-module</artifactId>
+                <version>${common-module-varsion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fast-json-version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
