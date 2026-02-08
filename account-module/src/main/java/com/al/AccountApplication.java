@@ -1,4 +1,4 @@
-package com.al.account;
+package com.al;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
