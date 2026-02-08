@@ -19,14 +19,14 @@ public class AccountController {
     private AccountService accountService;
     @PostMapping("/query")
     public Result query(@RequestBody @Valid AccountDto accountDto) throws Exception {
-        return Result.success(accountService.queryByStoreId(accountDto));
+        return Result.success(accountService.query(accountDto));
     }
     @PostMapping("/save")
     public Result save(@RequestBody @Valid AccountDto accountDto) throws Exception {
         return Result.success(accountService.save(accountDto));
     }
     @PostMapping("/delete")
-    public Result delete(@RequestBody @Valid AccountDto accountDto) throws Exception {
+    public Result delete(@RequestBody AccountDto accountDto) throws Exception {
         return Result.success(accountService.delete(accountDto));
     }
     @PostMapping("/update")

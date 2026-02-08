@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Collections;
 import java.util.List;
 @Slf4j
 @Service
@@ -49,35 +48,53 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String update(AccountDto accountDto) {
+    public String update(AccountDto accountDto) throws Exception {
         try {
-            checkParam(accountDto);
             log.info("start open account information update:{}", accountDto);
-            AccountVo build = AccountVo.builder()
-                    .accountStatus(accountDto.getAccountStatus())
-                    .storeId(accountDto.getStoreId())
-                    .accountNo(accountDto.getAccountNo()).build();
-            accountMapper.update(build, Wrappers.lambdaUpdate(AccountVo.class)
-                    .eq(AccountVo::getAccountNo,accountDto.getAccountNo())
-            .eq(AccountVo::getStoreId,accountDto.getStoreId())
-            .eq(AccountVo::getChannelCode,accountDto.getChannelCode()));
+            checkParam(accountDto);
+            Long count = accountMapper.selectCount(Wrappers.lambdaQuery(AccountVo.class)
+                    .eq(AccountVo::getAccountNo, accountDto.getAccountNo()));
+            if (count ==0) {
+                 throw new BusinessException(ResultEnum.ERROR.getCode(),"账户不存在");
+            }
+            Long flowCount = accountOpenMapper.selectCount(Wrappers.lambdaQuery(AccountOpenFlowVo.class)
+                    .eq(AccountOpenFlowVo::getOpenOrderNo, accountDto.getFlow()));
+            if (flowCount > 0) {
+                throw new BusinessException(ResultEnum.ERROR.getCode(), "请求流水号重复");
+            }
+            return accountTransactionImpl.update(accountDto);
         }catch (Exception e){
             log.error("open update account information error:{}", e.getMessage());
+            throw e;
         }
-
-        return null;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String delete(AccountDto accountDto) {
-        return null;
+    public String delete(AccountDto accountDto)throws Exception {
+        try {
+            log.info("start open account information delete:{}", accountDto);
+            int delete = accountMapper.delete(Wrappers.lambdaQuery(AccountVo.class).eq(AccountVo::getAccountNo, accountDto.getAccountNo()));
+            if (delete == 0) {
+                throw new BusinessException(ResultEnum.ERROR.getCode(), "账户号不存在");
+            }
+            return "删除成功";
+        }catch (Exception e){
+            log.error("open delete account information error:{}", e.getMessage());
+            throw e;
+        }
     }
 
     @Override
-    public List<AccountVo> queryByStoreId(AccountDto accountDto) {
-        return Collections.emptyList();
-    }
+    public List<AccountVo> query(AccountDto accountDto) {
+        try {
+            List<AccountVo> accountVos = accountMapper.selectList(Wrappers.lambdaQuery(AccountVo.class).eq(AccountVo::getAccountNo, accountDto.getAccountNo()));
+            return accountVos;
+        }catch (Exception e){
+            log.error("open query account information error:{}", e.getMessage());
+            throw e;
+        }
+        }
     public void checkParam(AccountDto accountDto) throws Exception{
         if (!StringUtils.isNullOrEmpty(accountDto.getAccountType()) &&!BusiEnum.contains(accountDto.getAccountType())) {
             throw new BusinessException(ResultEnum.ERROR.getCode(),"账户类型不正确");

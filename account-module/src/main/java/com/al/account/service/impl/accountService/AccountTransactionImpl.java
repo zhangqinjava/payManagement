@@ -8,6 +8,7 @@ import com.al.account.mapper.AccountOpenMapper;
 import com.al.common.business.BusiEnum;
 import com.al.common.exception.BusinessException;
 import com.al.common.result.ResultEnum;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -73,5 +74,33 @@ public class AccountTransactionImpl {
                 throw new BusinessException(ResultEnum.ERROR.getCode(), "开户失败");
             }
         }
+    }
+    @Transactional(rollbackFor = Exception.class,timeout = 30)
+    public String update(AccountDto accountDto) throws Exception{
+        AccountVo build = AccountVo.builder()
+                .accountStatus(accountDto.getAccountStatus())
+                .storeId(accountDto.getStoreId())
+                .accountNo(accountDto.getAccountNo()).build();
+        int update = accountMapper.update(build, Wrappers.lambdaUpdate(AccountVo.class)
+                .eq(AccountVo::getAccountNo, accountDto.getAccountNo())
+                .eq(AccountVo::getStoreId, accountDto.getStoreId())
+                .eq(AccountVo::getChannelCode, accountDto.getChannelCode()));
+        AccountOpenFlowVo accountFlow = AccountOpenFlowVo.builder().accountNo(accountDto.getAccountNo())
+                .accountType(accountDto.getAccountType())
+                .accountNo(accountDto.getAccountNo())
+                .storeId(accountDto.getStoreId())
+                .currency(accountDto.getCurrency())
+                .channelAccountNo(accountDto.getChannelAccountNo())
+                .openOrderNo(accountDto.getFlow())
+                .currency(BusiEnum.RMB.getCode())
+                .channelCode(accountDto.getChannelCode())
+                .channelAccountNo(accountDto.getChannelAccountNo())
+                .operator(accountDto.getOperation()==null?"system":accountDto.getOperation())
+                .openStatus(accountDto.getAccountStatus())
+                .modifyUser(accountDto.getModifyUser()==null?"system":accountDto.getModifyUser())
+                .createTime(DateFormat.getDateTimeInstance().format(new Date()))
+                .updateTime(DateFormat.getDateTimeInstance().format(new Date())).build();
+        accountOpenMapper.insert(accountFlow);
+        return "更新成功";
     }
 }
