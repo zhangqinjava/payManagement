@@ -5,8 +5,6 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import javax.xml.soap.SAAJResult;
-import java.math.BigDecimal;
 
 @Data
 public class AccountUpDto {
@@ -17,6 +15,8 @@ public class AccountUpDto {
     private String accountNo;
     @NotBlank(message = "商户号不能为空")
     private String storeId;
+    @NotBlank(message = "账户类型不能为空")
+    private String accountType;
     @NotBlank(message = "渠道不能为空")
     @Pattern(regexp = "1|2|3|4",message = "不支持的渠道类型")
     private String channelCode;
@@ -25,12 +25,19 @@ public class AccountUpDto {
     private String bizType;
     @NotBlank(message = "业务订单号不能为空")
     private String bizOrderNo;
-    @NotBlank(message = "订单金额不能为null")
+    @NotBlank(message = "业务订单日期不能为空")
+    @Pattern(regexp = "\\d{8}$",message = "必须是8位的数字")
+    private String bizOrderDate;
+    @NotBlank(message = "业务订单时间不能为空")
+    @Pattern(regexp = "\\d{6}$",message = "必须是6位的数字")
+    private String bizOrderTime;
+    @NotBlank(message = "订单金额不能为空")
     @Pattern(regexp = "\\d+", message = "金额只能是数字")
-    private BigDecimal amount;
+    private String amount;
     @NotBlank(message = "功能码不能为空")
-    @Pattern(regexp = "0601|0601|0603")
+    @Pattern(regexp = "0601|0602|0603")
     private String funCode;
+    private String remark;
 
 
 }

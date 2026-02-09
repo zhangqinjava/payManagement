@@ -1,8 +1,9 @@
 package com.al.account.service.accountService;
 
 import com.al.account.bean.dto.AccountUpDto;
-import com.al.account.bean.vo.AccountUpVo;
+import com.al.account.bean.vo.AccountUpDownVo;
 
 public interface AccountBanlanceService {
-    AccountUpVo up(AccountUpDto accountUpDto) throws Exception;
+    AccountUpDownVo up(AccountUpDto accountUpDto) throws Exception;
+    AccountUpDownVo down(AccountUpDto accountUpDto) throws Exception;
 }

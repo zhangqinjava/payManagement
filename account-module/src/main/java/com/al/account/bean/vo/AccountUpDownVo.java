@@ -1,6 +1,5 @@
 package com.al.account.bean.vo;
 
-import com.al.account.bean.dto.AccountDto;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,7 +7,7 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
-public class AccountUpVo {
+public class AccountUpDownVo {
     private String accountNo;
     private String flowNo;
     private String funCode;
@@ -16,6 +15,6 @@ public class AccountUpVo {
     private String funDirection;
     private String bizType;
     private BigDecimal amount;
-    private BigDecimal curAmount;
+    private BigDecimal curBalance;
     private String accountType;
 }

@@ -12,11 +12,18 @@ import com.al.common.result.ResultEnum;
 import com.al.common.util.TraceUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.mysql.cj.util.StringUtils;
+import io.reactivex.rxjava3.core.Completable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+
 @Slf4j
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -26,6 +33,8 @@ public class AccountServiceImpl implements AccountService {
     private AccountOpenMapper accountOpenMapper;
     @Autowired
     private AccountMapper accountMapper;
+    @Resource(name = "accountThreadPool")
+    private Executor accountThreadPool;
     @Override
     public String save(AccountDto accountDto) throws Exception{
         try {
@@ -47,20 +56,37 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public String update(AccountDto accountDto) throws Exception {
         try {
             log.info("start open account information update:{}", accountDto);
             checkParam(accountDto);
-            Long count = accountMapper.selectCount(Wrappers.lambdaQuery(AccountVo.class)
-                    .eq(AccountVo::getAccountNo, accountDto.getAccountNo()));
-            if (count ==0) {
-                 throw new BusinessException(ResultEnum.ERROR.getCode(),"账户不存在");
-            }
-            Long flowCount = accountOpenMapper.selectCount(Wrappers.lambdaQuery(AccountOpenFlowVo.class)
-                    .eq(AccountOpenFlowVo::getOpenOrderNo, accountDto.getFlow()));
-            if (flowCount > 0) {
-                throw new BusinessException(ResultEnum.ERROR.getCode(), "请求流水号重复");
+            CompletableFuture<String> validateFuture =
+                    CompletableFuture.supplyAsync(() ->
+                            accountMapper.selectCount(
+                                    Wrappers.lambdaQuery(AccountVo.class)
+                                            .eq(AccountVo::getAccountNo, accountDto.getAccountNo())
+                            ), accountThreadPool
+                    ).thenCombine(
+                            CompletableFuture.supplyAsync(() ->
+                                    accountOpenMapper.selectCount(
+                                            Wrappers.lambdaQuery(AccountOpenFlowVo.class)
+                                                    .eq(AccountOpenFlowVo::getOpenOrderNo, accountDto.getFlow())
+                                    ), accountThreadPool
+                            ),
+                            (count, flowCount) -> {
+                                if (count == 0) {
+                                    return "账户信息不存在";
+                                }
+                                if (flowCount > 0) {
+                                    return "流水号重复";
+                                }
+                                return "校验通过";
+                            }
+                    );
+            // 等待并触发异常
+            String join = validateFuture.join();
+            if (!"校验通过".equals(join)) {
+                throw new BusinessException(ResultEnum.ERROR.getCode(), join);
             }
             return accountTransactionImpl.update(accountDto);
         }catch (Exception e){
@@ -88,7 +114,10 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<AccountVo> query(AccountDto accountDto) {
         try {
-            List<AccountVo> accountVos = accountMapper.selectList(Wrappers.lambdaQuery(AccountVo.class).eq(AccountVo::getAccountNo, accountDto.getAccountNo()));
+            List<AccountVo> accountVos = accountMapper.selectList(Wrappers.lambdaQuery(AccountVo.class)
+                    .eq(AccountVo::getAccountNo, accountDto.getAccountNo())
+                    .eq(AccountVo::getStoreId, accountDto.getStoreId())
+                     .eq(AccountVo::getAccountType, accountDto.getAccountType()));
             return accountVos;
         }catch (Exception e){
             log.error("open query account information error:{}", e.getMessage());

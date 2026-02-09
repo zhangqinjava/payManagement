@@ -2,23 +2,19 @@ package com.al.account.service.impl.accountService;
 
 import com.al.account.bean.dto.AccountDto;
 import com.al.account.bean.dto.AccountUpDto;
-import com.al.account.bean.vo.AccountFlowVo;
-import com.al.account.bean.vo.AccountOpenFlowVo;
-import com.al.account.bean.vo.AccountUpVo;
-import com.al.account.bean.vo.AccountVo;
+import com.al.account.bean.vo.*;
+import com.al.account.mapper.AccountDtlMapper;
 import com.al.account.mapper.AccountFlowMapper;
 import com.al.account.mapper.AccountMapper;
 import com.al.account.mapper.AccountOpenMapper;
 import com.al.common.business.BusiEnum;
-import com.al.common.business.Common;
 import com.al.common.exception.BusinessException;
 import com.al.common.result.ResultEnum;
+import com.al.common.util.TraceUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import jodd.time.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -43,6 +39,8 @@ public class AccountTransactionImpl {
     @Autowired
     private AccountFlowMapper accountFlowMapper;
     @Autowired
+    private AccountDtlMapper accountDtlMapper;
+    @Autowired
     private RedissonClient redissonClient;
 
     @Transactional(rollbackFor = Exception.class,timeout = 30)
@@ -57,10 +55,8 @@ public class AccountTransactionImpl {
                     .accountStatus(BusiEnum.NORMAL.getCode())
                     .accountType(accountDto.getAccountType())
                     .balance(BigDecimal.ZERO)
-                    .availableBalance(BigDecimal.ZERO)
                     .currency(BusiEnum.RMB.getCode())
                     .frozenBalance(BigDecimal.ZERO)
-                    .availableBalance(BigDecimal.ZERO)
                     .transitBalance(BigDecimal.ZERO)
                     .createTime(DateFormat.getDateTimeInstance().format(new Date()))
                     .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
@@ -129,7 +125,7 @@ public class AccountTransactionImpl {
         return "更新成功";
     }
     @Transactional(rollbackFor = Exception.class,timeout = 30)
-    public AccountUpVo up( AccountUpDto accountUpDto,AccountVo accountVo) throws Exception{
+    public AccountUpDownVo up(AccountUpDto accountUpDto) throws Exception{
         RLock lock = redissonClient.getLock("account_banlance_lock" + accountUpDto.getFlowNo());
         try{
             if(lock.tryLock(10, TimeUnit.SECONDS)) {
@@ -138,8 +134,8 @@ public class AccountTransactionImpl {
                         Wrappers.lambdaUpdate(AccountVo.class)
                                 .eq(AccountVo::getAccountNo, accountUpDto.getAccountNo())
                                 // 方式一：直接拼接字符串 (数值类型是安全的)
-                                .setSql("balance = balance + " + accountUpDto.getAmount())
-                                .setSql("available_balance = available_balance + " + accountUpDto.getAmount())
+                                .setSql("balance = balance + " + new BigDecimal(accountUpDto.getAmount()))
+                                .setSql("update_time = now()")
                 );
                 if (rows == 0) {
                     throw new BusinessException(ResultEnum.ERROR.getCode(), "数据库更新失败");
@@ -149,25 +145,44 @@ public class AccountTransactionImpl {
                 log.info("账户更新后的结果:{}", result);
                 AccountFlowVo build = AccountFlowVo.builder()
                         .flowNo(accountUpDto.getFlowNo())
+                        .inAccountNo(accountUpDto.getAccountNo())
+                        .bizType(accountUpDto.getBizType())
+                        .funCode(accountUpDto.getFunCode())
+                        .inStoreId(accountUpDto.getStoreId())
+                        .amount(new BigDecimal(accountUpDto.getAmount()))
+                        .bizOrderNo(accountUpDto.getBizOrderNo())
+                        .bizOrderDate(accountUpDto.getBizOrderDate())
+                        .bizOrderTime(accountUpDto.getBizOrderTime())
+                        .remark(accountUpDto.getRemark())
+                        .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                        .createTime(DateFormat.getDateTimeInstance().format(new Date()))
+                        .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
+                        .build();
+                accountFlowMapper.insert(build);
+                AccountDtlVo accountDtlVo = AccountDtlVo.builder()
+                        .storeId(accountUpDto.getStoreId())
+                        .flowDtlNo(TraceUtil.createTraceId())
+                        .flowNo(accountUpDto.getFlowNo())
+                        .amount(new BigDecimal(accountUpDto.getAmount()))
                         .curBalance(result.getBalance())
                         .bizType(accountUpDto.getBizType())
                         .fundDirection(BusiEnum.FUN_DIRECTION_C.getCode())
                         .funCode(accountUpDto.getFunCode())
-                        .storeId(accountUpDto.getStoreId())
-                        .amount(accountUpDto.getAmount())
-                        .bizOrderNo(accountUpDto.getBizOrderNo())
-                        .createTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS", Locale.ROOT)))
-                        .updateTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.ROOT)))
+                        .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                         .build();
-                accountFlowMapper.insert(build);
-                AccountUpVo accountUpVo = AccountUpVo.builder().accountNo(accountUpDto.getAccountNo())
+                accountDtlMapper.insert(accountDtlVo);
+                AccountUpDownVo accountUpDownVo = AccountUpDownVo.builder().accountNo(accountUpDto.getAccountNo())
                         .accountType(result.getAccountType())
+                        .flowNo(accountUpDto.getFlowNo())
                         .funCode(accountUpDto.getFunCode())
-                        .amount(accountUpDto.getAmount())
+                        .amount(new BigDecimal(accountUpDto.getAmount()))
+                        .funDirection(BusiEnum.FUN_DIRECTION_C.getCode())
                         .bizType(accountUpDto.getBizType())
                         .channel_code(accountUpDto.getChannelCode())
-                        .curAmount(result.getBalance()).build();
-                return accountUpVo;
+                        .curBalance(result.getBalance())
+                        .build();
+                log.info("account up completed:{}", accountUpDownVo);
+                return accountUpDownVo;
             }else{
                 throw new BusinessException(ResultEnum.ERROR.getCode(), "系统繁忙，请稍后再试");
             }
