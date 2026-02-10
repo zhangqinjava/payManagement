@@ -142,7 +142,7 @@ public class AccountTransactionImpl {
         RLock lock = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountUpDownDto.getAccountNo());
         boolean locked = false;
         try{
-            locked=lock.tryLock();
+            locked=lock.tryLock(20,TimeUnit.SECONDS);
             if(locked) {
                 int rows = accountMapper.update(
                         null,
@@ -223,7 +223,7 @@ public class AccountTransactionImpl {
         RLock lock = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountUpDownDto.getAccountNo());
         boolean locked=false;
         try {
-            locked= lock.tryLock();
+            locked= lock.tryLock(20,TimeUnit.SECONDS);
             if (locked) {
                 int update = accountMapper.update(null, Wrappers.lambdaUpdate(AccountVo.class)
                         .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo())
@@ -304,7 +304,7 @@ public class AccountTransactionImpl {
         RLock multiLock = redissonClient.getMultiLock(lock, lock1);
         boolean locked=false;
         try{
-            locked=multiLock.tryLock();
+            locked=multiLock.tryLock(30,TimeUnit.SECONDS);
             //按照顺序加锁，防止死锁
             if (locked) {
                 List<AccountVo> accounts = accountMapper.selectForUpdate(accountNos);
