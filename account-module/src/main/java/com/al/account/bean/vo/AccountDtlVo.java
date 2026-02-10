@@ -20,12 +20,13 @@ public class AccountDtlVo {
    private String id;
    private String  flowDtlNo;
    private String  storeId;
+   private String  accountType;
    private String  flowNo;
    private String  bizType;
    private String  orderDate;
    private String  funCode;
    private BigDecimal amount;
-   private BigDecimal  curBalance;
+   private BigDecimal curBalance;
    private String  fundDirection;
    private String  createTime;
    private String  updateTime;

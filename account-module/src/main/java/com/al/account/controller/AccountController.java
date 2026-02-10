@@ -8,12 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-
-@RestController
-@RequestMapping("/open")
 /**
  * 开户相关的操作
  */
+@RestController
+@RequestMapping("/open")
 public class AccountController {
     @Autowired
     private AccountService accountService;

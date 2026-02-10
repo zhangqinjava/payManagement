@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class AccountOpenFlowVo {
     @TableId(type = IdType.AUTO)
    private String id;
-   private String openOrderNo;
+   private String flow ;
    private String accountNo;
    private String storeId;
    private String accountType;

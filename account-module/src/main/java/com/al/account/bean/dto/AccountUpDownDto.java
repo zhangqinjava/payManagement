@@ -7,7 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
 @Data
-public class AccountUpDto {
+public class AccountUpDownDto {
     @NotBlank(message = "流水号不能为空")
     @Length(max = 32,message = "流水号最长为32位")
     private String flowNo;

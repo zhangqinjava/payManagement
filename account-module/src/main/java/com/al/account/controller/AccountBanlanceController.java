@@ -1,7 +1,7 @@
 package com.al.account.controller;
 
-import com.al.account.bean.dto.AccountDto;
-import com.al.account.bean.dto.AccountUpDto;
+import com.al.account.bean.dto.AccountTransferDto;
+import com.al.account.bean.dto.AccountUpDownDto;
 import com.al.account.service.accountService.AccountBanlanceService;
 import com.al.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,15 +18,15 @@ public class AccountBanlanceController {
     @Autowired
     private AccountBanlanceService accountBanlanceService;
     @PostMapping("/up")
-    public Result up(@RequestBody @Valid AccountUpDto accountUpDto) throws Exception {
-        return Result.success(accountBanlanceService.up(accountUpDto));
+    public Result up(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
+        return Result.success(accountBanlanceService.up(accountUpDownDto));
     }
     @PostMapping("/down")
-    public Result down(@RequestBody @Valid AccountUpDto accountUpDto ) throws Exception {
-        return Result.success(null);
+    public Result down(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
+        return Result.success(accountBanlanceService.down(accountUpDownDto));
     }
     @PostMapping("/transfer")
-    public Result transfer(@RequestBody @Valid AccountDto accountDto) throws Exception {
-        return Result.success(null);
+    public Result transfer(@RequestBody @Valid AccountTransferDto accountTransferDto) throws Exception {
+        return Result.success(accountBanlanceService.transfer(accountTransferDto));
     }
 }
