@@ -18,24 +18,82 @@ import javax.validation.Valid;
 public class AccountBanlanceController {
     @Autowired
     private AccountBanlanceService accountBanlanceService;
+
+    /**
+     * 上涨
+     * @param accountUpDownDto
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/up")
     public Result up(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
         return Result.success(accountBanlanceService.up(accountUpDownDto));
     }
+
+    /**
+     * 下账
+     * @param accountUpDownDto
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/down")
     public Result down(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
         return Result.success(accountBanlanceService.down(accountUpDownDto));
     }
+
+    /**
+     * 将余额下账，然后上账到在途
+     * @param accountUpDownDto
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/downway")
+    public Result downway(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
+        return Result.success(accountBanlanceService.downWay(accountUpDownDto));
+    }
+
+    /**
+     * 在途账户下账
+     * @param accountUpDownDto
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/transitdown")
+    public Result transitDown(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
+        return Result.success(accountBanlanceService.transitDown(accountUpDownDto));
+    }
+
+    /**
+     * 转账
+     * @param accountTransferDto
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/transfer")
     public Result transfer(@RequestBody @Valid AccountTransferDto accountTransferDto) throws Exception {
         return Result.success(accountBanlanceService.transfer(accountTransferDto));
     }
+
+    /**
+     * 冻结
+     * @param accountFreezeDto
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/freeze")
     public Result freeze(@RequestBody @Valid AccountFreezeDto accountFreezeDto) throws Exception {
         return Result.success(accountBanlanceService.freeze(accountFreezeDto));
     }
+
+    /**
+     * 解冻
+     * @param accountFreezeDto
+     * @return
+     * @throws Exception
+     */
     @PostMapping("/unfreeze")
     public Result unfreeze(@RequestBody @Valid AccountFreezeDto accountFreezeDto) throws Exception {
         return Result.success(accountBanlanceService.unfreeze(accountFreezeDto));
     }
+
 }

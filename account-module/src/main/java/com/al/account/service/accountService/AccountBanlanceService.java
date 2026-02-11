@@ -13,4 +13,7 @@ public interface AccountBanlanceService {
     AccountTransferVo transfer(AccountTransferDto accountTransferDto) throws Exception;
     AccountFreezeResultVo freeze(AccountFreezeDto accountFreezeDto) throws Exception;
     AccountFreezeResultVo unfreeze(AccountFreezeDto accountFreezeDto) throws Exception;
+    AccountUpDownVo downWay(AccountUpDownDto accountUpDownDto) throws Exception;
+    AccountUpDownVo transitDown(AccountUpDownDto accountUpDownDto) throws Exception;
+
 }
