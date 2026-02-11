@@ -141,9 +141,7 @@ public class AccountTransactionImpl {
 
     @Transactional(rollbackFor = Exception.class, timeout = 30)
     public AccountUpDownVo up(AccountUpDownDto accountUpDownDto) throws Exception {
-        RLock lock = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountUpDownDto.getAccountNo());
         try {
-            lock.lock(); //如果获取不到就一直阻塞
             int rows = accountMapper.update(
                     null,
                     Wrappers.lambdaUpdate(AccountVo.class)
@@ -208,21 +206,13 @@ public class AccountTransactionImpl {
             } else {
                 throw e;
             }
-        } finally {
-            try {
-                lock.unlock();
-            } catch (IllegalMonitorStateException e) {
-                log.warn("unlock up lock failed, maybe already released", e);
-            }
         }
     }
 
     @Transactional(rollbackFor = Exception.class, timeout = 30)
     public AccountUpDownVo down(AccountUpDownDto accountUpDownDto) throws Exception {
-        RLock lock = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountUpDownDto.getAccountNo());
         try {
-                lock.lock();
-                int update = accountMapper.update(null, Wrappers.lambdaUpdate(AccountVo.class)
+            int update = accountMapper.update(null, Wrappers.lambdaUpdate(AccountVo.class)
                         .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo())
                         .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
                         .ge(AccountVo::getBalance, accountUpDownDto.getAmount())//金额必须大于等于当前下账的金额
@@ -281,29 +271,16 @@ public class AccountTransactionImpl {
         } catch (Exception e) {
             log.error("transaction operation down banlance exception:{}", e.getMessage());
             throw e;
-        } finally {
-            try {
-                if (lock.isHeldByCurrentThread()) {
-                    lock.unlock();
-                }
-            }catch (IllegalMonitorStateException e){
-                log.warn("unlock down lock failed, maybe already released", e);
-            }
-
         }
     }
 
     @Transactional(rollbackFor = Exception.class, timeout = 30)
     public AccountTransferVo transfer(AccountTransferDto accountTransferDto) throws Exception {
-        List<String> accountNos = Stream.of(accountTransferDto.getOutAccountNo(), accountTransferDto.getInAccountNo())
-                .sorted().collect(Collectors.toList());
-        RLock lock = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountNos.get(0));
-        RLock lock1 = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountNos.get(1));
-        RLock multiLock = redissonClient.getMultiLock(lock, lock1);
-        boolean locked = false;
+
         try {
-                multiLock.lock();
-            //按照顺序加锁，防止死锁
+                 List<String> accountNos = Stream.of(accountTransferDto.getOutAccountNo(), accountTransferDto.getInAccountNo())
+                    .sorted().collect(Collectors.toList());
+                //按照顺序加锁，防止死锁
                 List<AccountVo> accounts = accountMapper.selectForUpdate(accountNos);
                 AccountVo fromAccount = accounts.stream()
                         .filter(a -> a.getAccountNo().equals(accountTransferDto.getOutAccountNo())
@@ -409,12 +386,6 @@ public class AccountTransactionImpl {
         } catch (Exception e) {
             log.error("account operation transfer banlance exception:{}", e.getMessage());
             throw e;
-        } finally {
-            try {
-                multiLock.unlock();
-            } catch (IllegalMonitorStateException e) {
-                log.warn("unlock multiLock failed, maybe already released", e);
-            }
         }
     }
 }
