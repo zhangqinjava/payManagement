@@ -35,7 +35,7 @@ public class AccountUpDownDto {
     @Pattern(regexp = "\\d+", message = "金额只能是数字")
     private String amount;
     @NotBlank(message = "功能码不能为空")
-    @Pattern(regexp = "0601|0602|0603")
+    @Pattern(regexp = "0601|0602")
     private String funCode;
     private String remark;
 

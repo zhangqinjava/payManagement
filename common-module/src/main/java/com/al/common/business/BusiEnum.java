@@ -24,9 +24,13 @@ public enum BusiEnum {
     FUNCODE_UP("0601","上账","上账"),
     FUNCODE_DOWN("0602","下账","下账"),
     FUNCODE_TRANSFER("0603","转账","转账"),
+    FUNCODE_FREEZE("0604","可用余额冻结","可用余额冻结"),
+    FUNCODE_UNFREEZE("0605","冻结余额解冻","冻结余额解冻"),
     //方向
     FUN_DIRECTION_C("C","余额增加","余额增加"),
-    FUN_DIRECTION_D("D","余额减少","余额减少");
+    FUN_DIRECTION_D("D","余额减少","余额减少"),
+    FUN_DIRECTION_F("F","可用余额冻结","可用余额冻结"),
+    FUN_DIRECTION_U("U","冻结余额解冻","冻结余额解冻");
 
 
     private String code;

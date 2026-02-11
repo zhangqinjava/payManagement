@@ -1,5 +1,6 @@
 package com.al.account.controller;
 
+import com.al.account.bean.dto.AccountFreezeDto;
 import com.al.account.bean.dto.AccountTransferDto;
 import com.al.account.bean.dto.AccountUpDownDto;
 import com.al.account.service.accountService.AccountBanlanceService;
@@ -28,5 +29,13 @@ public class AccountBanlanceController {
     @PostMapping("/transfer")
     public Result transfer(@RequestBody @Valid AccountTransferDto accountTransferDto) throws Exception {
         return Result.success(accountBanlanceService.transfer(accountTransferDto));
+    }
+    @PostMapping("/freeze")
+    public Result freeze(@RequestBody @Valid AccountFreezeDto accountFreezeDto) throws Exception {
+        return Result.success(accountBanlanceService.freeze(accountFreezeDto));
+    }
+    @PostMapping("/unfreeze")
+    public Result unfreeze(@RequestBody @Valid AccountFreezeDto accountFreezeDto) throws Exception {
+        return Result.success(accountBanlanceService.unfreeze(accountFreezeDto));
     }
 }

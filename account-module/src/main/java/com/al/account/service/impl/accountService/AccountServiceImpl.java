@@ -8,13 +8,17 @@ import com.al.account.mapper.AccountMapper;
 import com.al.account.mapper.AccountOpenMapper;
 import com.al.account.service.accountService.AccountService;
 import com.al.common.business.BusiEnum;
+import com.al.common.business.Const;
 import com.al.common.exception.BusinessException;
 import com.al.common.result.ResultEnum;
 import com.al.common.util.TraceUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.mysql.cj.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +39,8 @@ public class AccountServiceImpl implements AccountService {
     private AccountMapper accountMapper;
     @Resource(name = "accountThreadPool")
     private Executor accountThreadPool;
+    @Autowired
+    private RedissonClient redissonClient;
     @Override
     public AccountOpenVo save(AccountDto accountDto) throws Exception{
         try {
@@ -53,12 +59,14 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public String update(AccountDto accountDto) throws Exception {
+        RLock lock = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountDto.getAccountNo());
         try {
             log.info("start open account information update:{}", accountDto);
             checkParam(accountDto);
             if (Objects.isNull(accountDto.getAccountNo())) {
                 throw new BusinessException(ResultEnum.ERROR.getCode(), "账户号不能为空");
             }
+            lock.lock();
             checkAccount(accountDto,true);
             log.info("end open account information update:{}", accountDto);
             // 等待并触发异常
@@ -66,6 +74,14 @@ public class AccountServiceImpl implements AccountService {
         }catch (Exception e){
             log.error("open update account information error:{}", e.getMessage());
             throw e;
+        }finally {
+            try{
+                if (lock.isHeldByCurrentThread()){
+                    lock.unlock();
+                }
+            }catch (IllegalMonitorStateException e){
+                log.warn("lock already release held by current thread:{}", e.getMessage());
+            }
         }
     }
 
