@@ -25,6 +25,7 @@ public enum BusiEnum {
     FUNCODE_DOWN("0602","下账","下账"),
     FUNCODE_DOWNWAY("0606","下账到在途","下账到在途"),
     FUNCODE_TRANSIT_DOWN("0607","在途下账","在途下账"),
+    FUNCODE_TRANSIT_UP("0608","在途账户上账到总账户账","在途账户上账到总账户账"),
     FUNCODE_TRANSFER("0603","转账","转账"),
     FUNCODE_FREEZE("0604","可用余额冻结","可用余额冻结"),
     FUNCODE_UNFREEZE("0605","冻结余额解冻","冻结余额解冻"),

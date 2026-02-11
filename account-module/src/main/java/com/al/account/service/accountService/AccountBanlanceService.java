@@ -15,5 +15,6 @@ public interface AccountBanlanceService {
     AccountFreezeResultVo unfreeze(AccountFreezeDto accountFreezeDto) throws Exception;
     AccountUpDownVo downWay(AccountUpDownDto accountUpDownDto) throws Exception;
     AccountUpDownVo transitDown(AccountUpDownDto accountUpDownDto) throws Exception;
+    AccountUpDownVo transitUp(AccountUpDownDto accountUpDownDto) throws Exception;
 
 }

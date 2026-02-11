@@ -62,6 +62,16 @@ public class AccountBanlanceController {
     public Result transitDown(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
         return Result.success(accountBanlanceService.transitDown(accountUpDownDto));
     }
+    /**
+     * 在途账户上涨到总账户
+     * @param accountUpDownDto
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/transitup")
+    public Result transitUp(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
+        return Result.success(accountBanlanceService.transitUp(accountUpDownDto));
+    }
 
     /**
      * 转账

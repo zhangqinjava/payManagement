@@ -15,7 +15,6 @@ import com.al.common.result.ResultEnum;
 import com.al.common.util.TraceUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -147,17 +146,17 @@ public class AccountTransactionImpl {
                             .eq(AccountVo::getStoreId, accountUpDownDto.getStoreId())
                             .eq(AccountVo::getAccountType, accountUpDownDto.getAccountType())
                             .apply(BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode() )|| BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()),"balance - frozen_balance >= {0}", accountUpDownDto.getAmount())//下账
-                            .ge(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()),AccountVo::getTransitBalance, accountUpDownDto.getAmount())//在途下账判断
-                            .setSql(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode()),"balance = balance + " + new BigDecimal(accountUpDownDto.getAmount()))//上账
+                            .ge(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode()),AccountVo::getTransitBalance, accountUpDownDto.getAmount())//在途下账判断
+                            .setSql(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode()),"balance = balance + " + new BigDecimal(accountUpDownDto.getAmount()))//上账
                             .setSql(BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()),"balance = balance - " + new BigDecimal(accountUpDownDto.getAmount()))//下账
                             .setSql(BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()), "transit_balance   = transit_balance  + " + new BigDecimal(accountUpDownDto.getAmount()))//上账到在途
-                            .setSql(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()), "transit_balance   = transit_balance  - " + new BigDecimal(accountUpDownDto.getAmount()))//上账到在途
+                            .setSql(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode()), "transit_balance   = transit_balance  - " + new BigDecimal(accountUpDownDto.getAmount()))//上账到在途
                             .setSql("update_time = now()")
             );
             if (rows == 0) {
                 if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
                     throw new BusinessException("账户上账失败，请检查账户信息");
-                }else if (BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode())){
+                }else if (BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
                     throw new BusinessException("在途账户余额不足");
                 }else{
                     throw new BusinessException("账户可用余额不足");
@@ -180,7 +179,8 @@ public class AccountTransactionImpl {
                     .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
                     .remark(accountUpDownDto.getRemark())
                     .build();
-            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
+            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())
+                    || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
                 build.setInAccountNo(accountUpDownDto.getAccountNo());
                 build.setInStoreId(accountUpDownDto.getStoreId());
                 build.setIn_account_type(accountUpDownDto.getAccountType());
@@ -202,7 +202,8 @@ public class AccountTransactionImpl {
                     .funCode(accountUpDownDto.getFunCode())
                     .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                     .build();
-            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
+            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())
+                || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
                 accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_C.getCode());
             }else{
                 accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_D.getCode());
@@ -218,7 +219,8 @@ public class AccountTransactionImpl {
                     .channel_code(accountUpDownDto.getChannelCode())
                     .curBalance(result.getBalance())
                     .build();
-            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
+            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())
+                || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
                 accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_C.getCode());
             }else {
                 accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_D.getCode());
@@ -238,6 +240,7 @@ public class AccountTransactionImpl {
     public AccountTransferVo transfer(AccountTransferDto accountTransferDto) throws Exception {
 
         try {
+                log.info("start account transfer incoming data:{}", accountTransferDto);
                  List<String> accountNos = Stream.of(accountTransferDto.getOutAccountNo(), accountTransferDto.getInAccountNo())
                     .sorted().collect(Collectors.toList());
                 //按照顺序加锁，防止死锁
