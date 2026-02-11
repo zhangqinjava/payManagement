@@ -56,7 +56,7 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
             lock.lock();
             checkAccount(accountUpDownDto);
             log.info("account up infomation check completed:{}",accountUpDownDto);
-            return accountTransactionImpl.upDown(accountUpDownDto,true);
+            return accountTransactionImpl.upDown(accountUpDownDto);
         }catch (Exception e){
             log.error("account banlance up exception:{}", e.getMessage());
             throw e;
@@ -82,7 +82,7 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
             lock.lock();
             checkAccount(accountUpDownDto);
             log.info("account up infomation check completed");
-            return accountTransactionImpl.upDown(accountUpDownDto,false);
+            return accountTransactionImpl.upDown(accountUpDownDto);
         }catch (Exception e){
             log.error("account banlance down exception:{}", e.getMessage());
             throw e;
@@ -93,6 +93,58 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
                 }
             } catch (IllegalMonitorStateException e) {
                 log.warn("unlock up lock failed, maybe already released", e);
+            }
+        }
+    }
+
+    @Override
+    public AccountUpDownVo downWay(AccountUpDownDto accountUpDownDto) throws Exception {
+        RLock lock= redissonClient.getLock(Const.UP_LOCK_PREFIX + accountUpDownDto.getAccountNo());
+        try {
+            log.info("account banlance downway amount params:{}", accountUpDownDto);
+            if (!BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode())){
+                throw new BusinessException(ResultEnum.ERROR.getCode(),"下账到在途功能码不正确");
+            }
+            lock.lock();
+            checkAccount(accountUpDownDto);
+            log.info("account downway infomation check completed:{}",accountUpDownDto);
+            return accountTransactionImpl.upDown(accountUpDownDto);
+        }catch (Exception e){
+            log.error("account banlance downway exception:{}", e.getMessage());
+            throw e;
+        }finally {
+            try {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            } catch (IllegalMonitorStateException e) {
+                log.warn("unlock downway lock failed, maybe already released", e);
+            }
+        }
+    }
+
+    @Override
+    public AccountUpDownVo transitDown(AccountUpDownDto accountUpDownDto) throws Exception {
+        RLock lock= redissonClient.getLock(Const.UP_LOCK_PREFIX + accountUpDownDto.getAccountNo());
+        try {
+            log.info("account banlance transitDown amount params:{}", accountUpDownDto);
+            if (!BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode())){
+                throw new BusinessException(ResultEnum.ERROR.getCode(),"在途下账功能码不正确");
+            }
+            lock.lock();
+            checkAccount(accountUpDownDto);
+            log.info("account transitDown infomation check completed:{}",accountUpDownDto);
+            return accountTransactionImpl.upDown(accountUpDownDto);
+        }catch (Exception e){
+            log.error("account banlance transitDown exception:{}", e.getMessage());
+            throw e;
+        }finally {
+            try {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            } catch (IllegalMonitorStateException e) {
+                log.warn("unlock transitDown lock failed, maybe already released", e);
             }
         }
     }

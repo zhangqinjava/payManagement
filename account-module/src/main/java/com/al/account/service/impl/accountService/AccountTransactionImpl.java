@@ -136,7 +136,7 @@ public class AccountTransactionImpl {
     }
 
     @Transactional(rollbackFor = Exception.class, timeout = 30)
-    public AccountUpDownVo upDown(AccountUpDownDto accountUpDownDto,boolean flag) throws Exception {
+    public AccountUpDownVo upDown(AccountUpDownDto accountUpDownDto) throws Exception {
         try {
             log.info("account up down balance infomation check completed:{}", accountUpDownDto);
             int rows = accountMapper.update(
@@ -146,17 +146,21 @@ public class AccountTransactionImpl {
                             .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
                             .eq(AccountVo::getStoreId, accountUpDownDto.getStoreId())
                             .eq(AccountVo::getAccountType, accountUpDownDto.getAccountType())
-                            .apply(!flag,"balance - frozen_balance >= {0}", accountUpDownDto.getAmount())//下账
-                            // 方式一：直接拼接字符串 (数值类型是安全的)
-                            .setSql(flag,"balance = balance + " + new BigDecimal(accountUpDownDto.getAmount()))//上账
-                            .setSql(!flag,"balance = balance - " + new BigDecimal(accountUpDownDto.getAmount()))//下账
+                            .apply(BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode() )|| BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()),"balance - frozen_balance >= {0}", accountUpDownDto.getAmount())//下账
+                            .ge(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()),AccountVo::getTransitBalance, accountUpDownDto.getAmount())//在途下账判断
+                            .setSql(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode()),"balance = balance + " + new BigDecimal(accountUpDownDto.getAmount()))//上账
+                            .setSql(BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()),"balance = balance - " + new BigDecimal(accountUpDownDto.getAmount()))//下账
+                            .setSql(BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()), "transit_balance   = transit_balance  + " + new BigDecimal(accountUpDownDto.getAmount()))//上账到在途
+                            .setSql(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()), "transit_balance   = transit_balance  - " + new BigDecimal(accountUpDownDto.getAmount()))//上账到在途
                             .setSql("update_time = now()")
             );
             if (rows == 0) {
-                if(flag){
+                if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
                     throw new BusinessException("账户上账失败，请检查账户信息");
+                }else if (BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode())){
+                    throw new BusinessException("在途账户余额不足");
                 }else{
-                    throw new BusinessException("账户可用分余额不足");
+                    throw new BusinessException("账户可用余额不足");
                 }
             }
             log.info("account up down already completed");
@@ -176,7 +180,7 @@ public class AccountTransactionImpl {
                     .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
                     .remark(accountUpDownDto.getRemark())
                     .build();
-            if(flag){
+            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
                 build.setInAccountNo(accountUpDownDto.getAccountNo());
                 build.setInStoreId(accountUpDownDto.getStoreId());
                 build.setIn_account_type(accountUpDownDto.getAccountType());
@@ -198,7 +202,7 @@ public class AccountTransactionImpl {
                     .funCode(accountUpDownDto.getFunCode())
                     .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                     .build();
-            if(flag){
+            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
                 accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_C.getCode());
             }else{
                 accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_D.getCode());
@@ -214,7 +218,7 @@ public class AccountTransactionImpl {
                     .channel_code(accountUpDownDto.getChannelCode())
                     .curBalance(result.getBalance())
                     .build();
-            if(flag){
+            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
                 accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_C.getCode());
             }else {
                 accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_D.getCode());
