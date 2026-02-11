@@ -150,6 +150,32 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
     }
 
     @Override
+    public AccountUpDownVo transitUp(AccountUpDownDto accountUpDownDto) throws Exception {
+        RLock lock= redissonClient.getLock(Const.UP_LOCK_PREFIX + accountUpDownDto.getAccountNo());
+        try {
+            log.info("account banlance transitUp amount params:{}", accountUpDownDto);
+            if (!BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
+                throw new BusinessException(ResultEnum.ERROR.getCode(),"在途上账到总账户功能码不正确");
+            }
+            lock.lock();
+            checkAccount(accountUpDownDto);
+            log.info("account transitUp infomation check completed:{}",accountUpDownDto);
+            return accountTransactionImpl.upDown(accountUpDownDto);
+        }catch (Exception e){
+            log.error("account banlance transitUp exception:{}", e.getMessage());
+            throw e;
+        }finally {
+            try {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            } catch (IllegalMonitorStateException e) {
+                log.warn("unlock transitUp lock failed, maybe already released", e);
+            }
+        }
+    }
+
+    @Override
     public AccountTransferVo transfer(AccountTransferDto accountTransferDto) throws Exception {
         List<String> accountNos = Stream.of(accountTransferDto.getOutAccountNo(), accountTransferDto.getInAccountNo())
                 .sorted().collect(Collectors.toList());
