@@ -11,8 +11,22 @@ public enum BusiEnum {
     CLOSE("2","注销","商户注销"),
     //账户类型
     CASH("201","现金","商户可见账户"),
-    SETTLE("208","待清分","待清分账户")
-    ;
+    SETTLE("208","待清分","待清分账户"),
+    //业务类型
+    BIZ_ONLINE("0","线上","线上业务"),
+    BIZ_OFFLINE("1","线下","线下业务"),
+    //渠道类型
+    WX("1","WX","微信渠道"),
+    ALIPAY("2","ALIPAY","支付宝渠道"),
+    UMAPY("3","UMPAY","联动渠道"),
+    LAKALA("4","LAKALA","拉卡拉渠道"),
+    //功能码
+    FUNCODE_UP("0601","上账","上账"),
+    FUNCODE_DOWN("0602","下账","下账"),
+    FUNCODE_TRANSFER("0603","转账","转账"),
+    //方向
+    FUN_DIRECTION_C("C","余额增加","余额增加"),
+    FUN_DIRECTION_D("D","余额减少","余额减少");
 
 
     private String code;

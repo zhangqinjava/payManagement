@@ -4,3 +4,18 @@ spring:
     password: zq199613
     username: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    connect-timeout: 5000ms
+    lettuce:
+      pool:
+        # 连接池最大连接数
+        max-active: 8
+        # 最大等待阻塞时间
+        max-wait: -1ms
+        # 最大空闲连接
+        max-idle: 8
+        # 最小空闲连接
+        min-idle: 0

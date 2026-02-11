@@ -25,7 +25,6 @@ public class AccountVo {
     private String accountType;
     private String currency;
     private BigDecimal balance;
-    private BigDecimal availableBalance;
     private BigDecimal frozenBalance;
     private BigDecimal transitBalance;
     private String accountStatus;

@@ -1,8 +1,10 @@
 package com.al.common.exception;
 
+import com.al.common.result.ResultEnum;
+
 import java.security.PrivilegedActionException;
 
-public class BusinessException extends Exception{
+public class BusinessException extends RuntimeException{
     private static final long serialVersionUID = 1L;
     private int code;
     private String msg;
@@ -15,18 +17,8 @@ public class BusinessException extends Exception{
      * @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
-    public BusinessException(String message, int code, String msg) {
-        super(message);
-        this.code = code;
-        this.msg = msg;
-    }
-
-    /**
-     * Constructs a new exception with {@code null} as its detail message.
-     * The cause is not initialized, and may subsequently be initialized by a
-     * call to {@link #initCause}.
-     */
-    public BusinessException(int code, String msg) {
+    public BusinessException( int code, String msg) {
+        super(msg);
         this.code = code;
         this.msg = msg;
     }
@@ -88,6 +80,12 @@ public class BusinessException extends Exception{
     public BusinessException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, int code, String msg) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.code = code;
+        this.msg = msg;
+    }
+
+    public BusinessException(String msg) {
+        super(msg);
+        this.code = ResultEnum.ERROR.getCode();
         this.msg = msg;
     }
 

@@ -18,17 +18,21 @@ import java.math.BigDecimal;
 public class AccountFlowVo {
    @TableId(type = IdType.AUTO)
    private String  id;;
-   /**
-    * 账户号
-    */
-   private String  accountNo;
-   private String  storeId;
    private String  flowNo;
-   private String  bizType;
-   private String  bizOrderNo;
+   private String inAccountNo;
+   private String  inStoreId;
+   private String in_account_type;
+   private String outStoreId;
+   private String out_account_type;
+   private String outAccountNo;
+   private String bizType;
+   private String bizOrderNo;
+   private String bizOrderDate;
+   private String bizOrderTime;
+   private String orderDate;
    private BigDecimal amount;
-   private BigDecimal  curBalance;
-   private String  fundDirection;
-   private String  createTime;
-   private String  updateTime;
+   private String funCode;
+   private String remark;
+   private String createTime;
+   private String updateTime;
 }

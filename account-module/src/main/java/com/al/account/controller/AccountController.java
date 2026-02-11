@@ -8,25 +8,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-
-@RestController
-@RequestMapping("/open")
 /**
  * 开户相关的操作
  */
+@RestController
+@RequestMapping("/open")
 public class AccountController {
     @Autowired
     private AccountService accountService;
     @PostMapping("/query")
     public Result query(@RequestBody @Valid AccountDto accountDto) throws Exception {
-        return Result.success(accountService.queryByStoreId(accountDto));
+        return Result.success(accountService.query(accountDto));
     }
     @PostMapping("/save")
     public Result save(@RequestBody @Valid AccountDto accountDto) throws Exception {
         return Result.success(accountService.save(accountDto));
     }
     @PostMapping("/delete")
-    public Result delete(@RequestBody @Valid AccountDto accountDto) throws Exception {
+    public Result delete(@RequestBody AccountDto accountDto) throws Exception {
         return Result.success(accountService.delete(accountDto));
     }
     @PostMapping("/update")
