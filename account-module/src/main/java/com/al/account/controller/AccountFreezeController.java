@@ -13,15 +13,16 @@ import java.util.concurrent.Executor;
 @RestController
 @Slf4j
 @RequestMapping("/freeze")
-public class AccountFreezeController {
-    @Autowired
-    private RedissonClient redissonClient;
-    @Resource(name = "accountThreadPool")
-    private Executor asyncExecutor;
-    int count=0;
+public class AccountFreezeController{
 
-    @GetMapping("/test")
-    public void test(){
+    @GetMapping("/save")
+    public void save(){
+
+    }
+    @GetMapping("/query")
+    public void query(){
+        log.info("query freeze ");
+
     }
 
 }

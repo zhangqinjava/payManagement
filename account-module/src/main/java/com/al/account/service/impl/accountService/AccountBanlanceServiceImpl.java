@@ -1,11 +1,9 @@
 package com.al.account.service.impl.accountService;
 
+import com.al.account.bean.dto.AccountFreezeDto;
 import com.al.account.bean.dto.AccountTransferDto;
 import com.al.account.bean.dto.AccountUpDownDto;
-import com.al.account.bean.vo.AccountFlowVo;
-import com.al.account.bean.vo.AccountTransferVo;
-import com.al.account.bean.vo.AccountUpDownVo;
-import com.al.account.bean.vo.AccountVo;
+import com.al.account.bean.vo.*;
 import com.al.account.mapper.AccountFlowMapper;
 import com.al.account.mapper.AccountMapper;
 import com.al.account.service.accountService.AccountBanlanceService;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -51,14 +50,13 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
         RLock lock= redissonClient.getLock(Const.UP_LOCK_PREFIX + accountUpDownDto.getAccountNo());
         try {
             log.info("account banlance up amount params:{}", accountUpDownDto);
-            checkAccount(accountUpDownDto);
             if (!BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
                 throw new BusinessException(ResultEnum.ERROR.getCode(),"上账功能码不正确");
             }
-            log.info("account up infomation check completed:{}",accountUpDownDto);
             lock.lock();
-            return accountTransactionImpl.up(accountUpDownDto);
-
+            checkAccount(accountUpDownDto);
+            log.info("account up infomation check completed:{}",accountUpDownDto);
+            return accountTransactionImpl.upDown(accountUpDownDto,true);
         }catch (Exception e){
             log.error("account banlance up exception:{}", e.getMessage());
             throw e;
@@ -78,14 +76,13 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
         RLock lock = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountUpDownDto.getAccountNo());
         try{
             log.info("account banlance down amount params:{}", accountUpDownDto);
-            checkAccount(accountUpDownDto);
             if (!BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode())){
                 throw new BusinessException(ResultEnum.ERROR.getCode(),"下账功能码不正确");
             }
-            log.info("account up infomation check completed");
             lock.lock();
-            return accountTransactionImpl.down(accountUpDownDto);
-
+            checkAccount(accountUpDownDto);
+            log.info("account up infomation check completed");
+            return accountTransactionImpl.upDown(accountUpDownDto,false);
         }catch (Exception e){
             log.error("account banlance down exception:{}", e.getMessage());
             throw e;
@@ -112,8 +109,8 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
             if (!BusiEnum.FUNCODE_TRANSFER.getCode().equals(accountTransferDto.getFunCode())){
                 throw new BusinessException(ResultEnum.ERROR.getCode(), "转账交易码错误" );
             }
-            checkAccount(accountTransferDto);
             multiLock.lock();
+            checkAccount(accountTransferDto);
             return accountTransactionImpl.transfer(accountTransferDto);
         }catch (Exception e){
             log.error("account banlance transfer exception:{}", e.getMessage());
@@ -129,8 +126,89 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
         }
     }
 
+    @Override
+    public AccountFreezeResultVo freeze(AccountFreezeDto accountFreezeDto) throws Exception {
+        RLock lock = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountFreezeDto.getAccountNo());
+        try{
+            log.info("account banlance freeze params:{}", accountFreezeDto);
+            if (!BusiEnum.FUNCODE_FREEZE.getCode().equals(accountFreezeDto.getFunCode())){
+                throw new BusinessException("功能码不正确");
+            }
+            lock.lock();
+            checkAccount(accountFreezeDto);
+            return accountTransactionImpl.freezeResultVo(accountFreezeDto, true);
+        }catch (Exception e){
+            log.info("account banlance freeze exception:{}", e.getMessage());
+            throw e;
+        }finally {
+            try {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            }catch (IllegalMonitorStateException e) {
+                log.warn("freeze unlock up lock failed, maybe already released", e);
+            }
+        }
+    }
+
+    @Override
+    public AccountFreezeResultVo unfreeze(AccountFreezeDto accountFreezeDto) throws Exception {
+        RLock lock = redissonClient.getLock(Const.UP_LOCK_PREFIX + accountFreezeDto.getAccountNo());
+        try{
+            log.info("account banlance unfreeze params:{}", accountFreezeDto);
+            if (!BusiEnum.FUNCODE_UNFREEZE.getCode().equals(accountFreezeDto.getFunCode())){
+                throw new BusinessException("功能码不正确");
+            }
+            lock.lock();
+            checkAccount(accountFreezeDto);
+            return accountTransactionImpl.freezeResultVo(accountFreezeDto, false);
+        }catch (Exception e){
+            log.info("account banlance unfreeze exception:{}", e.getMessage());
+            throw e;
+        }finally {
+            try {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            }catch (IllegalMonitorStateException e) {
+                log.warn("unfreeze unlock up lock failed, maybe already released", e);
+            }
+        }
+    }
+
+    public void  checkAccount(AccountFreezeDto accountFreezeDto){
+        log.info("account freeze banlance check params:{}", accountFreezeDto);
+        try{
+            CompletableFuture.supplyAsync(()->{
+                return accountMapper.selectOne(Wrappers.lambdaQuery(AccountVo.class)
+                        .eq(AccountVo::getAccountNo, accountFreezeDto.getAccountNo())
+                        .eq(AccountVo::getAccountType, accountFreezeDto.getAccountType())
+                        .eq(AccountVo::getStoreId, accountFreezeDto.getStoreId()));
+            },accountThreadPool).thenCombine(CompletableFuture.supplyAsync(()->{
+                return accountFlowMapper.selectOne(Wrappers.lambdaQuery(AccountFlowVo.class)
+                        .eq(AccountFlowVo::getFlowNo, accountFreezeDto.getFlowNo()));
+            },accountThreadPool), (account,flow)->{
+                if (Objects.isNull(account)){
+                    throw new BusinessException("账户信息不存在");
+                }else if (!BusiEnum.NORMAL.getCode().equals(account.getAccountStatus())){
+                    throw new BusinessException("账户状态不正确");
+                }
+                if (Objects.nonNull(flow)){
+                    throw new BusinessException("流水号重复" );
+                }
+                return null;
+            }).join();
+        }catch (Exception e){
+            log.error("account banlance freeze exception:{}", e.getCause());
+            if (e.getCause() instanceof BusinessException){
+                throw (BusinessException) e.getCause();
+            }
+            throw e;
+        }
+    }
+
     public void checkAccount(AccountUpDownDto accountUpDownDto) throws Exception {
-        log.info("account banlance check amount status and flow information:{}", accountUpDownDto);
+        log.info("account up or down banlance check amount status and flow information:{}", accountUpDownDto);
         try {
             CompletableFuture.supplyAsync(() ->
                     accountMapper.selectOne(
@@ -163,6 +241,7 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
                     }
             ).join();
         }catch (Exception e) {
+            log.error("account banlance up or down exception:{}", e.getCause());
             if (e.getCause() instanceof BusinessException) {
                 throw (BusinessException) e.getCause();
             }
@@ -195,6 +274,7 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
                 return null;
             }).join();
         }catch (Exception e){
+            log.error("account banlance transfer exception:{}", e.getCause());
             if (e.getCause() instanceof BusinessException) {
                 throw (BusinessException) e.getCause();
             }

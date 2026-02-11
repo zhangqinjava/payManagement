@@ -1,6 +1,7 @@
 package com.al.account.service.impl.accountService;
 
 import com.al.account.bean.dto.AccountDto;
+import com.al.account.bean.dto.AccountFreezeDto;
 import com.al.account.bean.dto.AccountTransferDto;
 import com.al.account.bean.dto.AccountUpDownDto;
 import com.al.account.bean.vo.*;
@@ -9,13 +10,11 @@ import com.al.account.mapper.AccountFlowMapper;
 import com.al.account.mapper.AccountMapper;
 import com.al.account.mapper.AccountOpenMapper;
 import com.al.common.business.BusiEnum;
-import com.al.common.business.Const;
 import com.al.common.exception.BusinessException;
 import com.al.common.result.ResultEnum;
 import com.al.common.util.TraceUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -30,7 +29,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,8 +43,6 @@ public class AccountTransactionImpl {
     private AccountFlowMapper accountFlowMapper;
     @Autowired
     private AccountDtlMapper accountDtlMapper;
-    @Autowired
-    private RedissonClient redissonClient;
 
     @Transactional(rollbackFor = Exception.class, timeout = 30)
     public AccountOpenVo save(AccountDto accountDto) throws Exception {
@@ -140,30 +136,37 @@ public class AccountTransactionImpl {
     }
 
     @Transactional(rollbackFor = Exception.class, timeout = 30)
-    public AccountUpDownVo up(AccountUpDownDto accountUpDownDto) throws Exception {
+    public AccountUpDownVo upDown(AccountUpDownDto accountUpDownDto,boolean flag) throws Exception {
         try {
+            log.info("account up down balance infomation check completed:{}", accountUpDownDto);
             int rows = accountMapper.update(
                     null,
                     Wrappers.lambdaUpdate(AccountVo.class)
                             .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo())
                             .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
+                            .eq(AccountVo::getStoreId, accountUpDownDto.getStoreId())
+                            .eq(AccountVo::getAccountType, accountUpDownDto.getAccountType())
+                            .apply(!flag,"balance - frozen_balance >= {0}", accountUpDownDto.getAmount())//下账
                             // 方式一：直接拼接字符串 (数值类型是安全的)
-                            .setSql("balance = balance + " + new BigDecimal(accountUpDownDto.getAmount()))
+                            .setSql(flag,"balance = balance + " + new BigDecimal(accountUpDownDto.getAmount()))//上账
+                            .setSql(!flag,"balance = balance - " + new BigDecimal(accountUpDownDto.getAmount()))//下账
                             .setSql("update_time = now()")
             );
             if (rows == 0) {
-                throw new BusinessException(ResultEnum.ERROR.getCode(), "账户上账失败，请检查账户信息");
+                if(flag){
+                    throw new BusinessException("账户上账失败，请检查账户信息");
+                }else{
+                    throw new BusinessException("账户可用分余额不足");
+                }
             }
-            List<AccountVo> accountVos = accountMapper.selectList(Wrappers.lambdaQuery(AccountVo.class).eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo()));
-            AccountVo result = accountVos.get(0);
+            log.info("account up down already completed");
+            AccountVo result = accountMapper.selectOne(Wrappers.lambdaQuery(AccountVo.class)
+                  .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo()));
             log.info("账户更新后的结果:{}", result);
             AccountFlowVo build = AccountFlowVo.builder()
                     .flowNo(accountUpDownDto.getFlowNo())
-                    .inAccountNo(accountUpDownDto.getAccountNo())
                     .bizType(accountUpDownDto.getBizType())
                     .funCode(accountUpDownDto.getFunCode())
-                    .inStoreId(accountUpDownDto.getStoreId())
-                    .in_account_type(accountUpDownDto.getAccountType())
                     .amount(new BigDecimal(accountUpDownDto.getAmount()))
                     .bizOrderNo(accountUpDownDto.getBizOrderNo())
                     .bizOrderDate(accountUpDownDto.getBizOrderDate())
@@ -173,6 +176,16 @@ public class AccountTransactionImpl {
                     .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
                     .remark(accountUpDownDto.getRemark())
                     .build();
+            if(flag){
+                build.setInAccountNo(accountUpDownDto.getAccountNo());
+                build.setInStoreId(accountUpDownDto.getStoreId());
+                build.setIn_account_type(accountUpDownDto.getAccountType());
+            }else{
+                build.setOutAccountNo(accountUpDownDto.getAccountNo());
+                build.setOutStoreId(accountUpDownDto.getStoreId());
+                build.setOut_account_type(accountUpDownDto.getAccountType());
+            }
+            log.info("account build account flow data:{}", build);
             accountFlowMapper.insert(build);
             AccountDtlVo accountDtlVo = AccountDtlVo.builder()
                     .storeId(accountUpDownDto.getStoreId())
@@ -182,25 +195,34 @@ public class AccountTransactionImpl {
                     .amount(new BigDecimal(accountUpDownDto.getAmount()))
                     .curBalance(result.getBalance())
                     .bizType(accountUpDownDto.getBizType())
-                    .fundDirection(BusiEnum.FUN_DIRECTION_C.getCode())
                     .funCode(accountUpDownDto.getFunCode())
                     .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                     .build();
+            if(flag){
+                accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_C.getCode());
+            }else{
+                accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_D.getCode());
+            }
+            log.info("account build account flow detail data:{}", accountDtlVo);
             accountDtlMapper.insert(accountDtlVo);
             AccountUpDownVo accountUpDownVo = AccountUpDownVo.builder().accountNo(accountUpDownDto.getAccountNo())
                     .accountType(result.getAccountType())
                     .flowNo(accountUpDownDto.getFlowNo())
                     .funCode(accountUpDownDto.getFunCode())
                     .amount(new BigDecimal(accountUpDownDto.getAmount()))
-                    .funDirection(BusiEnum.FUN_DIRECTION_C.getCode())
                     .bizType(accountUpDownDto.getBizType())
                     .channel_code(accountUpDownDto.getChannelCode())
                     .curBalance(result.getBalance())
                     .build();
+            if(flag){
+                accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_C.getCode());
+            }else {
+                accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_D.getCode());
+            }
             log.info("account up completed:{}", accountUpDownVo);
             return accountUpDownVo;
         } catch (Exception e) {
-            log.error("transaction operation up banlance exception:{}", e.getMessage());
+            log.error("transaction operation down up banlance exception:{}", e.getMessage());
             if (e instanceof DuplicateKeyException) {
                 throw new BusinessException(ResultEnum.ERROR.getCode(), "流水号重复");
             } else {
@@ -208,72 +230,6 @@ public class AccountTransactionImpl {
             }
         }
     }
-
-    @Transactional(rollbackFor = Exception.class, timeout = 30)
-    public AccountUpDownVo down(AccountUpDownDto accountUpDownDto) throws Exception {
-        try {
-            int update = accountMapper.update(null, Wrappers.lambdaUpdate(AccountVo.class)
-                        .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo())
-                        .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
-                        .ge(AccountVo::getBalance, accountUpDownDto.getAmount())//金额必须大于等于当前下账的金额
-                        .setSql("balance = balance - " + new BigDecimal(accountUpDownDto.getAmount()))
-                        .setSql("update_time = now()")
-                );
-                if (update == 0) {
-                    throw new BusinessException(ResultEnum.ERROR.getCode(), "账户扣款失败，请检查账户余额信息");
-                }
-                List<AccountVo> accountVos = accountMapper.selectList(Wrappers.lambdaQuery(AccountVo.class).eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo()));
-                AccountVo result = accountVos.get(0);
-                log.info("账户更新后的结果:{}", result);
-                AccountFlowVo build = AccountFlowVo.builder()
-                        .flowNo(accountUpDownDto.getFlowNo())
-                        .outAccountNo(accountUpDownDto.getAccountNo())
-                        .out_account_type(accountUpDownDto.getAccountType())
-                        .bizType(accountUpDownDto.getBizType())
-                        .funCode(accountUpDownDto.getFunCode())
-                        .outStoreId(accountUpDownDto.getStoreId())
-                        .amount(new BigDecimal(accountUpDownDto.getAmount()))
-                        .bizOrderNo(accountUpDownDto.getBizOrderNo())
-                        .bizOrderDate(accountUpDownDto.getBizOrderDate())
-                        .bizOrderTime(accountUpDownDto.getBizOrderTime())
-                        .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                        .createTime(DateFormat.getDateTimeInstance().format(new Date()))
-                        .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
-                        .remark(accountUpDownDto.getRemark())
-                        .build();
-                accountFlowMapper.insert(build);
-                AccountDtlVo accountDtlVo = AccountDtlVo.builder()
-                        .storeId(accountUpDownDto.getStoreId())
-                        .accountType(accountUpDownDto.getAccountType())
-                        .flowDtlNo(TraceUtil.createTraceId())
-                        .flowNo(accountUpDownDto.getFlowNo())
-                        .amount(new BigDecimal(accountUpDownDto.getAmount()))
-                        .curBalance(result.getBalance())
-                        .bizType(accountUpDownDto.getBizType())
-                        .fundDirection(BusiEnum.FUN_DIRECTION_D.getCode())
-                        .funCode(accountUpDownDto.getFunCode())
-                        .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                        .build();
-                accountDtlMapper.insert(accountDtlVo);
-                AccountUpDownVo accountUpDownVo = AccountUpDownVo.builder().accountNo(accountUpDownDto.getAccountNo())
-                        .accountType(result.getAccountType())
-                        .flowNo(accountUpDownDto.getFlowNo())
-                        .funCode(accountUpDownDto.getFunCode())
-                        .amount(new BigDecimal(accountUpDownDto.getAmount()))
-                        .funDirection(BusiEnum.FUN_DIRECTION_D.getCode())
-                        .bizType(accountUpDownDto.getBizType())
-                        .channel_code(accountUpDownDto.getChannelCode())
-                        .curBalance(result.getBalance())
-                        .build();
-                log.info("account down completed:{}", accountUpDownVo);
-                return accountUpDownVo;
-
-        } catch (Exception e) {
-            log.error("transaction operation down banlance exception:{}", e.getMessage());
-            throw e;
-        }
-    }
-
     @Transactional(rollbackFor = Exception.class, timeout = 30)
     public AccountTransferVo transfer(AccountTransferDto accountTransferDto) throws Exception {
 
@@ -298,11 +254,11 @@ public class AccountTransactionImpl {
                 int fromupdate = accountMapper.update(null, Wrappers.<AccountVo>lambdaUpdate(AccountVo.class)
                         .eq(AccountVo::getAccountNo, fromAccount.getAccountNo())
                         .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
-                        .ge(AccountVo::getBalance, accountTransferDto.getAmount())
+                        .apply("balance - frozen_balance >= {0}", accountTransferDto.getAmount())
                         .setSql("balance=balance - " + accountTransferDto.getAmount())
                         .setSql("update_time = now()"));
                 if (fromupdate == 0) {
-                    throw new BusinessException(ResultEnum.ERROR.getCode(), "转出方扣款异常");
+                    throw new BusinessException(ResultEnum.ERROR.getCode(), "转出方扣款可用余额不足异常");
                 }
                 int toupdate = accountMapper.update(null, Wrappers.lambdaUpdate(AccountVo.class)
                         .eq(AccountVo::getAccountNo, toAccount.getAccountNo())
@@ -385,6 +341,79 @@ public class AccountTransactionImpl {
                 return result;
         } catch (Exception e) {
             log.error("account operation transfer banlance exception:{}", e.getMessage());
+            throw e;
+        }
+    }
+    @Transactional(rollbackFor = Exception.class,timeout = 30)
+    public AccountFreezeResultVo freezeResultVo(AccountFreezeDto freezeDto,boolean flag) throws Exception {
+        try {
+            log.info("start account  freeze operation:{}", freezeDto);
+            int update = accountMapper.update(null, Wrappers.lambdaUpdate(AccountVo.class)
+                    .eq(AccountVo::getAccountNo, freezeDto.getAccountNo())
+                    .eq(AccountVo::getAccountType, freezeDto.getAccountType())
+                    .eq(AccountVo::getStoreId, freezeDto.getStoreId())
+                    .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
+                    .apply(flag,"balance - frozen_balance >= {0}", freezeDto.getAmount())//冻结
+                    .ge(!flag,AccountVo::getFrozenBalance,freezeDto.getAmount())//解冻
+                    .setSql(flag,"frozen_balance=frozen_balance + " + new BigDecimal(freezeDto.getAmount()))//冻结
+                    .setSql(!flag,"frozen_balance=frozen_balance-"+ new BigDecimal(freezeDto.getAmount()))//解冻
+                    .setSql("update_time=now()"));
+            if (update == 0) {
+                log.info("账户冻结解冻操作失败:{}", freezeDto);
+                if (flag) {
+                    throw new BusinessException("账户冻结余额不足");
+                }else{
+                    throw new BusinessException("账户解冻余额不足");
+                }
+            }
+            AccountVo accountVo = accountMapper.selectOne(Wrappers.<AccountVo>lambdaQuery(AccountVo.class)
+                    .eq(AccountVo::getAccountNo, freezeDto.getAccountNo()));
+            log.info("account freeze after infomation:{}", accountVo);
+            AccountFlowVo build = AccountFlowVo.builder()
+                    .flowNo(freezeDto.getFlowNo())
+                    .bizType(freezeDto.getBizType())
+                    .funCode(freezeDto.getFunCode())
+                    .inAccountNo(freezeDto.getAccountNo())
+                    .in_account_type(freezeDto.getAccountType())
+                    .inStoreId(freezeDto.getStoreId())
+                    .amount(new BigDecimal(freezeDto.getAmount()))
+                    .bizOrderNo(freezeDto.getBizOrderNo())
+                    .bizOrderDate(freezeDto.getBizOrderDate())
+                    .bizOrderTime(freezeDto.getBizOrderTime())
+                    .remark(freezeDto.getRemark())
+                    .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                    .createTime(DateFormat.getDateTimeInstance().format(new Date()))
+                    .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
+                    .build();
+            accountFlowMapper.insert(build);
+            AccountDtlVo accountDtlVo = AccountDtlVo.builder()
+                    .storeId(freezeDto.getStoreId())
+                    .accountType(freezeDto.getAccountType())
+                    .flowDtlNo(TraceUtil.createTraceId())
+                    .flowNo(freezeDto.getFlowNo())
+                    .amount(new BigDecimal(freezeDto.getAmount()))
+                    .curBalance(accountVo.getBalance())
+                    .bizType(freezeDto.getBizType())
+                    .fundDirection(flag ? BusiEnum.FUN_DIRECTION_F.getCode() : BusiEnum.FUN_DIRECTION_U.getCode())
+                    .funCode(freezeDto.getFunCode())
+                    .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                    .build();
+            accountDtlMapper.insert(accountDtlVo);
+            return AccountFreezeResultVo.builder()
+                    .freezeAmount(new BigDecimal(freezeDto.getAmount()))
+                    .accountNo(freezeDto.getAccountNo())
+                    .accountType(freezeDto.getAccountType())
+                    .storeId(freezeDto.getStoreId())
+                    .bizType(freezeDto.getBizType())
+                    .funCode(freezeDto.getFunCode())
+                    .frozenBalance(accountVo.getFrozenBalance())
+                    .flowNo(freezeDto.getFlowNo())
+                    .accountType(freezeDto.getAccountType())
+                    .channel_code(freezeDto.getChannelCode())
+                    .curBalance(accountVo.getBalance())
+                    .build();
+        }catch (Exception e){
+            log.error("account operation  freeze or unfreeze exception message:{}", e.getMessage());
             throw e;
         }
     }
