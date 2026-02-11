@@ -21,7 +21,7 @@ account-service 是一个 **高并发、安全、可扩展的账户资金模块*
 ## 3. 账户资金模型
 ### 3.1 账户字段说明
 ```text
- balance         账户账面余额（不直接减少）
+balance         账户账面余额（不直接减少）
 frozen_balance  冻结金额
 available       可用余额 = balance - frozen_balance
 ```
@@ -30,18 +30,18 @@ available       可用余额 = balance - frozen_balance
  所有资金操作使用 SQL 原子校验
  禁止「先查余额 → 再更新」
 ## 4. 并发与一致性设计
-使用 Redisson 分布式锁
-多账户操作使用 MultiLock
-锁在事务开始前获取，事务完成后释放
-所有资金更新使用 单条 SQL 原子更新
+- 使用 Redisson 分布式锁
+- 多账户操作使用 MultiLock
+- 锁在事务开始前获取，事务完成后释放
+- 所有资金更新使用 单条 SQL 原子更新
 ## 5. 技术栈
-Java 1.8+
-Spring Boot
-MyBatis-Plus
-MySQL
-Redisson
-Lombok
+- Java 1.8+
+- Spring Boot
+- MyBatis-Plus
+- MySQL
+- Redisson
+- Lombok
 ## 6. 注意事项
-所有金额字段使用 BigDecimal
-所有冻结 / 解冻操作必须保证幂等
-禁止绕过账户模块直接更新账户表
+- 所有金额字段使用 BigDecimal
+- 所有冻结 / 解冻操作必须保证幂等
+- 禁止绕过账户模块直接更新账户表
