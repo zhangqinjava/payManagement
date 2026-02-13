@@ -1,0 +1,13 @@
+server:
+  servlet:
+    context-path: /merchant/
+  port: 8082
+spring:
+  application:
+    name: merchant-module
+  profiles:
+    active: dev
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
