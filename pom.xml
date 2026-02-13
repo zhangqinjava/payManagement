@@ -11,6 +11,7 @@
     <modules>
         <module>account-module</module>
         <module>common-module</module>
+        <module>merchant-module</module>
     </modules>
 
     <properties>
