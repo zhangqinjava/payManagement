@@ -12,6 +12,7 @@
         <module>account-module</module>
         <module>common-module</module>
         <module>merchant-module</module>
+        <module>order-module</module>
     </modules>
 
     <properties>
@@ -19,7 +20,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql-version>8.0.33</mysql-version>
-        <mybaties-plus-version>3.5.1</mybaties-plus-version>
+        <mybaties-plus-version>3.5.5</mybaties-plus-version>
         <common-module-varsion>1.0-SNAPSHOT</common-module-varsion>
         <fast-json-version>2.0.27</fast-json-version>
     </properties>
@@ -35,14 +36,14 @@
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-alibaba-dependencies</artifactId>
-                <version>2021.0.5.0</version>
+                <version>2021.0.4.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>2021.0.3</version>
+                <version>2021.0.4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
