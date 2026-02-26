@@ -10,6 +10,10 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
