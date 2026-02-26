@@ -1,11 +1,11 @@
-package com;
+package com.ai;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MerchantApplication {
+public class OrderApplication {
     public static void main(String[] args) {
-        SpringApplication.run(MerchantApplication.class, args);
+        SpringApplication.run(OrderApplication.class, args);
     }
 }

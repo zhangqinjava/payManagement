@@ -5,7 +5,6 @@ import com.ai.bean.vo.MerchantVo;
 import com.ai.config.MerchantCache;
 import com.ai.mapper.MerchantMapper;
 import com.ai.service.MerchantService;
-import com.al.common.business.BusiEnum;
 import com.al.common.business.MerchantEnum;
 import com.al.common.exception.BusinessException;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -19,25 +18,22 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.yaml.snakeyaml.constructor.DuplicateKeyException;
-
 import javax.annotation.Resource;
-import java.sql.Wrapper;
 import java.text.DateFormat;
-import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class MerchantServiceImpl implements MerchantService {
-    @Autowired
-    private MerchantMapper merchantMapper;
+
     @Resource
     private MerchantCache merchantCache;
     @Resource
     private RedissonClient redissonClient;
+    @Autowired
+    private MerchantMapper merchantMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
