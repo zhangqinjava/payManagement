@@ -1,0 +1,16 @@
+server:
+  servlet:
+    context-path: /gateway/
+  port: 8084
+spring:
+  application:
+    name: gateway-module
+  profiles:
+    active: dev
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true

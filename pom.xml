@@ -13,6 +13,7 @@
         <module>common-module</module>
         <module>merchant-module</module>
         <module>order-module</module>
+        <module>gateway-module</module>
     </modules>
 
     <properties>
