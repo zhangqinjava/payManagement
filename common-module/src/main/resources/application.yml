@@ -1,0 +1,7 @@
+rest:
+  config:
+    connect-timeout: 3000
+    read-timeout: 5000
+    connection-request-timeout: 1000
+    max-total: 200
+    max-per-route: 50

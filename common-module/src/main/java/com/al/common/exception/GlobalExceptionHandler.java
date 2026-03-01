@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(Exception.class)
     public Result<?> handleException(Exception e) {
-        return Result.error(e.getMessage(),null);
+        return Result.error("系统报错",null);
     }
 
 }

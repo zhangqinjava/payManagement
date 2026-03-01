@@ -33,7 +33,14 @@ public enum BusiEnum {
     FUN_DIRECTION_C("C","余额增加","余额增加"),
     FUN_DIRECTION_D("D","余额减少","余额减少"),
     FUN_DIRECTION_F("F","可用余额冻结","可用余额冻结"),
-    FUN_DIRECTION_U("U","冻结余额解冻","冻结余额解冻");
+    FUN_DIRECTION_U("U","冻结余额解冻","冻结余额解冻"),
+    PUBLIC("0","对公账户","对公账户"),
+    PRIVATE("1","对私账户","对私账户"),
+    DEBIT_CARD("1","借记卡","借记卡"),
+    CREDIT_CARD("2","贷记卡","贷记卡"),
+    IS_DEFAULT("0","默认结算卡","默认结算卡"),
+    IS_NOT_DEFAULT("1","非默认结算卡","非默认结算卡");
+
 
 
     private String code;

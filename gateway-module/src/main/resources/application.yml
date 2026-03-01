@@ -3,6 +3,8 @@ server:
     context-path: /gateway/
   port: 8084
 spring:
+  main:
+    web-application-type: reactive
   application:
     name: gateway-module
   profiles:
