@@ -2,9 +2,10 @@ package com.ai.service.impl;
 
 import com.ai.bean.dto.MerchantDto;
 import com.ai.bean.vo.MerchantVo;
-import com.ai.config.MerchantCache;
+import com.ai.config.GenericCache;
 import com.ai.mapper.MerchantMapper;
 import com.ai.service.MerchantService;
+import com.al.common.business.Const;
 import com.al.common.business.MerchantEnum;
 import com.al.common.exception.BusinessException;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -22,19 +23,21 @@ import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class MerchantServiceImpl implements MerchantService {
 
-    @Resource
-    private MerchantCache merchantCache;
+    @Autowired
+    private GenericCache genericCache;
     @Resource
     private RedissonClient redissonClient;
     @Autowired
     private MerchantMapper merchantMapper;
-
+    @Resource(name = "accountThreadPool")
+    private ThreadPoolExecutor threadPoolExecutor;
     @Override
     @Transactional(rollbackFor = Exception.class)
     public MerchantVo save(MerchantDto merchantDto) throws Exception {
@@ -94,15 +97,15 @@ public class MerchantServiceImpl implements MerchantService {
                     new TransactionSynchronizationAdapter() {
                         @Override
                         public void afterCommit() {
-                            merchantCache.delete(merchantDto.getMerchantId());
+                            genericCache.delete(Const.MERCHANT_PREFIX+merchantDto.getMerchantId());
 
                             // 延迟双删
                             CompletableFuture.runAsync(() -> {
                                 try {
                                     Thread.sleep(500);
                                 } catch (InterruptedException ignored) {}
-                                merchantCache.delete(merchantDto.getMerchantId());
-                            });
+                                genericCache.delete(Const.MERCHANT_PREFIX+merchantDto.getMerchantId());
+                            },threadPoolExecutor);
                         }
                     }
             );
@@ -125,15 +128,15 @@ public class MerchantServiceImpl implements MerchantService {
                     new TransactionSynchronizationAdapter() {
                         @Override
                         public void afterCommit() {
-                            merchantCache.delete(merchantId);
+                            genericCache.delete(Const.MERCHANT_PREFIX+merchantId);
 
                             // 延迟双删
                             CompletableFuture.runAsync(() -> {
                                 try {
                                     Thread.sleep(500);
                                 } catch (InterruptedException ignored) {}
-                                merchantCache.delete(merchantId);
-                            });
+                                genericCache.delete(Const.MERCHANT_PREFIX+merchantId);
+                            },threadPoolExecutor);
                         }
                     }
             );
@@ -150,47 +153,45 @@ public class MerchantServiceImpl implements MerchantService {
                 throw  new BusinessException("商户号不能为空!");
             }
             // 1. 先查缓存
-            MerchantVo merchant = merchantCache.get(merchantId);
+            MerchantVo merchant = genericCache.get(Const.MERCHANT_PREFIX+merchantId,MerchantVo.class);
             if (merchant != null) {
                 return merchant;
             }
             // 2. 空值缓存判断
-            if (merchantCache.isNullCached(merchantId)) {
+            if (genericCache.isNullCached(Const.MERCHANT_PREFIX+merchantId)) {
                 return null;
             }
-            String lockKey = "m:lock:" + merchantId;
-            RLock lock = redissonClient.getLock(lockKey);
+            RLock lock = redissonClient.getLock(Const.MERCHANT_LOCK+merchantId);
             try {
                 // 3. 防击穿加锁
-                if (lock.tryLock(50, 5, TimeUnit.SECONDS)) {
+                if (lock.tryLock(100, TimeUnit.MILLISECONDS)) {
                     // double check
-                    merchant = merchantCache.get(merchantId);
+                    merchant = genericCache.get(Const.MERCHANT_PREFIX+merchantId,MerchantVo.class);
                     if (merchant != null) {
                         return merchant;
                     }
                     // 4. DB 回源
                      merchant = merchantMapper.selectOne(Wrappers.lambdaQuery(MerchantVo.class).eq(MerchantVo::getMerchantId, merchantId));
                     if (merchant == null) {
-                        merchantCache.cacheNull(merchantId);
+                        genericCache.cacheNull(Const.MERCHANT_NULL_PREFIX,merchantId);
                         return null;
                     }
                     // 5. 写缓存
-                    merchantCache.set(merchant);
+                    genericCache.set(Const.MERCHANT_PREFIX+merchant.getMerchantId(),merchant);
                     return merchant;
                 }else {
                     // 没拿到锁，短暂 sleep 后再读缓存
                     Thread.sleep(20);
-                    return merchantCache.get(merchantId);
-
+                    return genericCache.get(Const.MERCHANT_PREFIX+merchantId,MerchantVo.class);
                 }
         }catch (Exception e){
                 if(e instanceof InterruptedException){
                     Thread.currentThread().interrupt();
                 }
                  log.error("query merchant information fail:{} ", e.getMessage());
-                throw new BusinessException("查询失败");
+                throw e;
         }finally {
-                if(lock.isHeldByCurrentThread()){
+                if(lock != null && lock.isHeldByCurrentThread()){
                     lock.unlock();
                 }
             }
