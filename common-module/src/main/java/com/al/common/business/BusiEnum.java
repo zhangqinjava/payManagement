@@ -39,7 +39,15 @@ public enum BusiEnum {
     DEBIT_CARD("1","借记卡","借记卡"),
     CREDIT_CARD("2","贷记卡","贷记卡"),
     IS_DEFAULT("0","默认结算卡","默认结算卡"),
-    IS_NOT_DEFAULT("1","非默认结算卡","非默认结算卡");
+    IS_NOT_DEFAULT("1","非默认结算卡","非默认结算卡"),
+    RATE_DISABLED("0","费率未生效","费率未生效"),
+    RATE_NOT_DISABLED("1","费率已经生效","费率已经生效"),
+    FEE_MODE_FIXED("1","计费模式","固定"),
+    FEE_MODE_RATE("1","计费模式","百分比"),
+    FEE_MODE_MIX("1","计费模式","固定百分比混合"),
+    BIZ_TYPE_PAY("0","业务类型","付款"),
+    BIZ_TYPE_REFUND("0","业务类型","退款"),
+    BIZ_TYPE_RECEIPT("0","业务类型","收单");
 
 
 

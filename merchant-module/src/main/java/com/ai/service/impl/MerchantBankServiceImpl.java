@@ -9,12 +9,14 @@ import com.al.common.business.BusiEnum;
 import com.al.common.business.Const;
 import com.al.common.business.EncrypUtil;
 import com.al.common.exception.BusinessException;
+import com.al.common.util.RestTemplateUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -26,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -37,6 +40,9 @@ public class MerchantBankServiceImpl implements MerchantBankService {
     private GenericCache genericCache;
     @Autowired
     private RedissonClient redissonClient;
+    @Autowired
+    @Qualifier("customRestTemplate")
+    private RestTemplate restTemplate;
     @Override
     public List<MerchantBankVo> query(MerchantBankDto merchantBankDto) {
         try {
@@ -91,6 +97,8 @@ public class MerchantBankServiceImpl implements MerchantBankService {
     public MerchantBankVo save(MerchantBankDto merchantBankDto) {
         try{
             //四要素鉴权需要自及去接入来校验 持卡人姓名 持卡人身份证 持卡人卡号 持卡人手机号
+            //调用四要素接口
+//            Object o = RestTemplateUtil.postJson(restTemplate, "", Object.class, Object.class);
             //调用银行卡信息获取，卡类型、联行号、
             MerchantBankVo build = MerchantBankVo.builder()
                     .merchantId(merchantBankDto.getMerchantId())

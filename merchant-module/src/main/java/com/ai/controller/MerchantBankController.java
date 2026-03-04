@@ -1,7 +1,6 @@
 package com.ai.controller;
 
 import com.ai.bean.dto.MerchantBankDto;
-import com.ai.bean.vo.MerchantBankVo;
 import com.ai.service.MerchantBankService;
 import com.al.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,7 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/bank")
-public class MerChantBankController {
+public class MerchantBankController {
     @Autowired
     private MerchantBankService merchantBankService;
     @PostMapping("/query")

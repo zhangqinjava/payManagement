@@ -35,6 +35,18 @@ public class GenericCache {
         renew(key);
         return JSON.parseObject(json, clazz);
     }
+    public <T> T getRenewal(String key, Class<T> clazz) {
+        // 1. NULL 缓存命中
+        if (isNullCached(key)) {
+            return null;
+        }
+        // 2. 正常缓存
+        String json = stringRedisTemplate.opsForValue().get(key);
+        if (json == null) {
+            return null;
+        }
+        return JSON.parseObject(json, clazz);
+    }
     public <T> T get(String key, Class<T> clazz, Long ttl, TimeUnit timeUnit) {
         // 1. NULL 缓存命中
         if (isNullCached(key)) {
@@ -86,6 +98,11 @@ public class GenericCache {
         stringRedisTemplate.opsForValue()
                 .set(nullKey(key), "1", 1, TimeUnit.MINUTES);
     }
+    public void cacheNull(String key,Integer expire,TimeUnit timeUnit) {
+        stringRedisTemplate.opsForValue()
+                .set(nullKey(key), "1", expire, timeUnit);
+    }
+
     public void cacheNull(String prefix,String key) {
         stringRedisTemplate.opsForValue()
                 .set(nullKey(prefix,key), null, 1, TimeUnit.MINUTES);

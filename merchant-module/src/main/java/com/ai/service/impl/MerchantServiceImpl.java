@@ -153,7 +153,7 @@ public class MerchantServiceImpl implements MerchantService {
                 throw  new BusinessException("商户号不能为空!");
             }
             // 1. 先查缓存
-            MerchantVo merchant = genericCache.get(Const.MERCHANT_PREFIX+merchantId,MerchantVo.class);
+            MerchantVo merchant = genericCache.get(Const.MERCHANT_PREFIX+merchantId, MerchantVo.class);
             if (merchant != null) {
                 return merchant;
             }
@@ -166,7 +166,7 @@ public class MerchantServiceImpl implements MerchantService {
                 // 3. 防击穿加锁
                 if (lock.tryLock(100, TimeUnit.MILLISECONDS)) {
                     // double check
-                    merchant = genericCache.get(Const.MERCHANT_PREFIX+merchantId,MerchantVo.class);
+                    merchant = genericCache.get(Const.MERCHANT_PREFIX+merchantId, MerchantVo.class);
                     if (merchant != null) {
                         return merchant;
                     }
@@ -182,7 +182,7 @@ public class MerchantServiceImpl implements MerchantService {
                 }else {
                     // 没拿到锁，短暂 sleep 后再读缓存
                     Thread.sleep(20);
-                    return genericCache.get(Const.MERCHANT_PREFIX+merchantId,MerchantVo.class);
+                    return genericCache.get(Const.MERCHANT_PREFIX+merchantId, MerchantVo.class);
                 }
         }catch (Exception e){
                 if(e instanceof InterruptedException){
