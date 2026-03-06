@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ai.mapper.OrderTradeMapper">
+    <update id="updateStatus">
+        UPDATE order_trade
+        SET trade_status = #{newStatus},
+            fail_reason = #{failReason},
+            update_time = NOW(),
+            version = version + 1
+        WHERE trade_no = #{tradeNo}
+          AND trade_status = #{oldStatus}
+    </update>
+</mapper>

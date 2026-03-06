@@ -12,7 +12,7 @@ public class AccountDto {
     @NotBlank(message = "请求流水号不能为空")
     private String flow;
     @NotBlank(message = "商户号不能为空")
-    private String storeId;
+    private String merchantNo;
     @NotBlank(message = "渠道号不能为空")
     private String channelCode;
     @NotBlank(message = "渠道账户号不能为空")

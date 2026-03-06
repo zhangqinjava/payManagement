@@ -1,9 +1,11 @@
 package com.al.account.service.impl.accountService;
 
 import com.al.account.bean.dto.AccountFreezeDto;
+import com.al.account.bean.dto.AccountQueryDto;
 import com.al.account.bean.dto.AccountTransferDto;
 import com.al.account.bean.dto.AccountUpDownDto;
 import com.al.account.bean.vo.*;
+import com.al.account.mapper.AccountDtlMapper;
 import com.al.account.mapper.AccountFlowMapper;
 import com.al.account.mapper.AccountMapper;
 import com.al.account.service.accountService.AccountBanlanceService;
@@ -39,6 +41,8 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
     private AccountMapper accountMapper;
     @Autowired
     private AccountFlowMapper accountFlowMapper;
+    @Autowired
+    private AccountDtlMapper accountDtlMapper;
     @Autowired
     private AccountTransactionImpl accountTransactionImpl;
     @Resource(name = "accountThreadPool")
@@ -176,6 +180,17 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
     }
 
     @Override
+    public AccountQueryDtlVo query(AccountQueryDto accountQueryDto) throws Exception {
+        try {
+            log.info("account detail query amount start  params:{}", accountQueryDto);
+            return accountDtlMapper.queryDetail(accountQueryDto);
+        }catch (Exception e){
+            log.error("query account transfer detai information exception:{}", e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
     public AccountTransferVo transfer(AccountTransferDto accountTransferDto) throws Exception {
         List<String> accountNos = Stream.of(accountTransferDto.getOutAccountNo(), accountTransferDto.getInAccountNo())
                 .sorted().collect(Collectors.toList());
@@ -261,7 +276,7 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
                 return accountMapper.selectOne(Wrappers.lambdaQuery(AccountVo.class)
                         .eq(AccountVo::getAccountNo, accountFreezeDto.getAccountNo())
                         .eq(AccountVo::getAccountType, accountFreezeDto.getAccountType())
-                        .eq(AccountVo::getStoreId, accountFreezeDto.getStoreId()));
+                        .eq(AccountVo::getMerchantNo, accountFreezeDto.getMerchantNo()));
             },accountThreadPool).thenCombine(CompletableFuture.supplyAsync(()->{
                 return accountFlowMapper.selectOne(Wrappers.lambdaQuery(AccountFlowVo.class)
                         .eq(AccountFlowVo::getFlowNo, accountFreezeDto.getFlowNo()));
@@ -293,7 +308,7 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
                             Wrappers.lambdaQuery(AccountVo.class)
                                     .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo())
                                     .eq(AccountVo::getAccountType, accountUpDownDto.getAccountType())
-                                    .eq(AccountVo::getStoreId, accountUpDownDto.getStoreId())
+                                    .eq(AccountVo::getMerchantNo, accountUpDownDto.getMerchantNo())
                     ), accountThreadPool
             ).thenCombine(
                     CompletableFuture.supplyAsync(() ->

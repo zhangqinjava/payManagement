@@ -7,7 +7,7 @@ import lombok.Data;
 @Builder
 public class AccountOpenVo {
     private String flow;
-    private String storeId;
+    private String merchantNo;
     private String accountNo;
     private String accountType;
     private String accountStatus;

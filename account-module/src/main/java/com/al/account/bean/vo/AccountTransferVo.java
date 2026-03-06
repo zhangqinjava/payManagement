@@ -10,8 +10,8 @@ import java.math.BigDecimal;
 public class AccountTransferVo {
     private String inAccountNo;
     private String outAccountNo;
-    private String inStoreId;
-    private String outStoreId;
+    private String inMerchantNo;
+    private String outMerchantNo;
     private String inAccountType;
     private String outAccountType;
     private BigDecimal inCurBlance;

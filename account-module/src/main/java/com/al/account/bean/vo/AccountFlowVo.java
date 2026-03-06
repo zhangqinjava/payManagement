@@ -20,9 +20,9 @@ public class AccountFlowVo {
    private String  id;;
    private String  flowNo;
    private String inAccountNo;
-   private String  inStoreId;
+   private String  inMerchantNo;
    private String in_account_type;
-   private String outStoreId;
+   private String outMerchantNo;
    private String out_account_type;
    private String outAccountNo;
    private String bizType;

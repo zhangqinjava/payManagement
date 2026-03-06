@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 public class AccountVo {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String storeId;
+    private String merchantNo;
     private String accountNo;
     private String channelCode;
     private String channelAccountNo;

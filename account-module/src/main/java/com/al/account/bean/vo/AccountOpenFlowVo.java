@@ -19,7 +19,7 @@ public class AccountOpenFlowVo {
    private String id;
    private String flow ;
    private String accountNo;
-   private String storeId;
+   private String merchantNo;
    private String accountType;
    private String currency;
    private String channelCode;

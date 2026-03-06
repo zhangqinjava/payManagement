@@ -14,7 +14,7 @@ public class AccountUpDownDto {
     @NotBlank(message = "账户号不能为空")
     private String accountNo;
     @NotBlank(message = "商户号不能为空")
-    private String storeId;
+    private String merchantNo;
     @NotBlank(message = "账户类型不能为空")
     private String accountType;
     @NotBlank(message = "渠道不能为空")

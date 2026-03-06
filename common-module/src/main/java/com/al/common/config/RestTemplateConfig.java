@@ -1,6 +1,5 @@
 package com.al.common.config;
 
-import com.al.common.bean.RestTemplateProperties;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;

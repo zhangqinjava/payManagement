@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 public class AccountFreezeResultVo {
     private String flowNo;
     private String accountNo;
-    private String storeId;
+    private String merchantNo;
     private String accountType;
     private String funCode;
     private String channel_code;

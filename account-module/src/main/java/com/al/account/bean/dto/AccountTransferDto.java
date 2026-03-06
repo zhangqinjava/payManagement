@@ -13,13 +13,13 @@ public class AccountTransferDto {
     @NotBlank(message = "转入方账户号不能为空")
     private String inAccountNo;
     @NotBlank(message = "转入方商户号不能为空")
-    private String inStoreId;
+    private String inMerchantNo;
     @NotBlank(message = "转入方账户类型不能为空")
     private String inAccountType;
     @NotBlank(message = "转出方账户号不能为空")
     private String outAccountNo;
     @NotBlank(message = "转出方商户号不能为空")
-    private String outStoreId;
+    private String outMerchantNo;
     @NotBlank(message = "转出方账户类型不能为空")
     private String outAccountType;
     @NotBlank(message = "渠道不能为空")

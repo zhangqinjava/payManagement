@@ -19,7 +19,7 @@ public class AccountDtlVo {
     @TableId(type = IdType.AUTO)
    private String id;
    private String  flowDtlNo;
-   private String  storeId;
+   private String  merchantNo;
    private String  accountType;
    private String  flowNo;
    private String  bizType;

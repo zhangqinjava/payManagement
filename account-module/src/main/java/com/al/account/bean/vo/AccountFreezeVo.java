@@ -15,7 +15,7 @@ public class AccountFreezeVo {
    private String  id;
    private String  freezeNo;
    private String  acountNo;
-   private String  storeId;
+   private String  merchantNo;
    private String  accountType;
    private String  bizOrder;
    private String  bizType;
