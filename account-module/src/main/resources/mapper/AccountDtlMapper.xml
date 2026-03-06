@@ -20,7 +20,7 @@
         <foreach collection="list" item="item" separator=",">
             (
             #{item.flowDtlNo},
-            #{item.storeId},
+            #{item.merchantNo},
             #{item.accountType},
             #{item.flowNo},
             #{item.bizType},
@@ -32,5 +32,44 @@
             )
         </foreach>
     </insert>
+    <select id="queryDetail" resultType="com.al.account.bean.vo.AccountQueryDtlVo">
+        select
+            flow.id,
+            flow.flow_no,
+            flow.in_account_no,
+            flow.in_merchant_no,
+            flow.in_account_type,
+            flow.out_account_no,
+            flow.out_merchant_no,
+            flow.out_account_type,
+            flow.biz_type,
+            flow.biz_order_no,
+            flow.biz_order_date,
+            flow.biz_order_time,
+            flow.remark,
+            dtl.flow_dtl_no,
+            dtl.amount,
+            dtl.cur_balance,
+            dtl.fun_code,
+            dtl.order_date,
+            dtl.fund_direction
+        from t_set_account_flow as flow
+                 left join t_set_account_dtl as dtl on flow.flow_no = dtl.flow_no
+        <where>
+            <if test="dto.startDate != null and dto.endDate != null" >
+                 and dtl.order_date between #{dto.startDate} and #{dto.endDate}
+            </if>
+            <if test="dto.accountNo != null">
+                 and flow.in_account_no=#{dto.accountNo}
+            </if>
+            <if test="dto.acctType != null">
+                and flow.in_account_type=#{dto.acctType}
+            </if>
+
+        </where>
+        where flow.order_date between '20260101' and '20260401'
+
+    </select>
+
 
 </mapper>

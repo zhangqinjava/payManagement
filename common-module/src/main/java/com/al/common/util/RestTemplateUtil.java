@@ -13,11 +13,11 @@ public class RestTemplateUtil {
 
     /* ==================== GET ==================== */
 
-    public <T> T get(RestTemplate restTemplate,String url, Class<T> responseType) {
+    public static <T> T get(RestTemplate restTemplate,String url, Class<T> responseType) {
         return get(url, null, null, responseType,restTemplate);
     }
 
-    public <T> T get(
+    public static <T> T get(
             String url,
             Map<String, ?> queryParams,
             Map<String, String> headers,
@@ -44,7 +44,7 @@ public class RestTemplateUtil {
 
     /* ==================== POST JSON ==================== */
 
-    public <T> T postJson(
+    public static <T> T postJson(
             RestTemplate restTemplate,
             String url,
             Object body,
@@ -53,7 +53,7 @@ public class RestTemplateUtil {
         return postJson(url, body, null, responseType,restTemplate);
     }
 
-    public <T> T postJson(
+    public static <T> T postJson(
             String url,
             Object body,
             Map<String, String> headers,
@@ -81,7 +81,7 @@ public class RestTemplateUtil {
 
     /* ==================== 通用 Exchange ==================== */
 
-    public <T> T exchange(
+    public static <T> T exchange(
             String url,
             HttpMethod method,
             Object body,
@@ -108,7 +108,7 @@ public class RestTemplateUtil {
 
     /* ==================== 工具方法 ==================== */
 
-    private String buildUrl(String url, Map<String, ?> queryParams) {
+    private static String buildUrl(String url, Map<String, ?> queryParams) {
         if (queryParams == null || queryParams.isEmpty()) {
             return url;
         }
@@ -118,7 +118,7 @@ public class RestTemplateUtil {
         return builder.toUriString();
     }
 
-    private HttpHeaders buildHeaders(Map<String, String> headers) {
+    private static HttpHeaders buildHeaders(Map<String, String> headers) {
         HttpHeaders httpHeaders = new HttpHeaders();
         if (headers != null) {
             httpHeaders.setAll(headers);

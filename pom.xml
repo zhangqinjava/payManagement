@@ -14,6 +14,7 @@
         <module>merchant-module</module>
         <module>order-module</module>
         <module>gateway-module</module>
+        <module>fegin-module</module>
     </modules>
 
     <properties>

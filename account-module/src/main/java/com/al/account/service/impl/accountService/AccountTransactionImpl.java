@@ -49,7 +49,7 @@ public class AccountTransactionImpl {
             log.info("start open account infomation save:{}", accountDto);
             AccountVo build = AccountVo.builder()
                     .accountNo(accountDto.getAccountNo())
-                    .storeId(accountDto.getStoreId())
+                    .merchantNo(accountDto.getMerchantNo())
                     .channelCode(accountDto.getChannelCode())
                     .channelAccountNo(accountDto.getChannelAccountNo())
                     .accountStatus(BusiEnum.NORMAL.getCode())
@@ -65,7 +65,7 @@ public class AccountTransactionImpl {
             AccountOpenFlowVo accountFlow = AccountOpenFlowVo.builder().accountNo(accountDto.getAccountNo())
                     .accountType(accountDto.getAccountType())
                     .accountNo(accountDto.getAccountNo())
-                    .storeId(accountDto.getStoreId())
+                    .merchantNo(accountDto.getMerchantNo())
                     .currency(accountDto.getCurrency())
                     .channelAccountNo(accountDto.getChannelAccountNo())
                     .flow(accountDto.getFlow())
@@ -82,7 +82,7 @@ public class AccountTransactionImpl {
             log.info("end open account infomation save success:{}", build);
             return AccountOpenVo.builder()
                     .accountNo(accountDto.getAccountNo())
-                    .storeId(accountDto.getStoreId())
+                    .merchantNo(accountDto.getMerchantNo())
                     .channelCode(accountDto.getChannelCode())
                     .channelAccountNo(accountDto.getChannelAccountNo())
                     .accountStatus(BusiEnum.NORMAL.getCode())
@@ -104,13 +104,13 @@ public class AccountTransactionImpl {
     public String update(AccountDto accountDto) throws Exception {
         AccountVo build = AccountVo.builder()
                 .accountStatus(accountDto.getAccountStatus())
-                .storeId(accountDto.getStoreId())
+                .merchantNo(accountDto.getMerchantNo())
                 .accountNo(accountDto.getAccountNo())
                 .updateTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS", Locale.ROOT))).build();
 
         int update = accountMapper.update(build, Wrappers.lambdaUpdate(AccountVo.class)
                 .eq(AccountVo::getAccountNo, accountDto.getAccountNo())
-                .eq(AccountVo::getStoreId, accountDto.getStoreId())
+                .eq(AccountVo::getMerchantNo, accountDto.getAccountNo())
                 .eq(AccountVo::getChannelCode, accountDto.getChannelCode()));
         if (update == 0) {
             return "更新失败";
@@ -118,7 +118,7 @@ public class AccountTransactionImpl {
         AccountOpenFlowVo accountFlow = AccountOpenFlowVo.builder().accountNo(accountDto.getAccountNo())
                 .accountType(accountDto.getAccountType())
                 .accountNo(accountDto.getAccountNo())
-                .storeId(accountDto.getStoreId())
+                .merchantNo(accountDto.getAccountNo())
                 .currency(accountDto.getCurrency())
                 .channelAccountNo(accountDto.getChannelAccountNo())
                 .flow(accountDto.getFlow())
@@ -143,7 +143,7 @@ public class AccountTransactionImpl {
                     Wrappers.lambdaUpdate(AccountVo.class)
                             .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo())
                             .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
-                            .eq(AccountVo::getStoreId, accountUpDownDto.getStoreId())
+                            .eq(AccountVo::getMerchantNo, accountUpDownDto.getMerchantNo())
                             .eq(AccountVo::getAccountType, accountUpDownDto.getAccountType())
                             .apply(BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode() )|| BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()),"balance - frozen_balance >= {0}", accountUpDownDto.getAmount())//下账
                             .ge(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode()),AccountVo::getTransitBalance, accountUpDownDto.getAmount())//在途下账判断
@@ -182,17 +182,17 @@ public class AccountTransactionImpl {
             if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())
                     || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
                 build.setInAccountNo(accountUpDownDto.getAccountNo());
-                build.setInStoreId(accountUpDownDto.getStoreId());
+                build.setInMerchantNo(accountUpDownDto.getMerchantNo());
                 build.setIn_account_type(accountUpDownDto.getAccountType());
             }else{
                 build.setOutAccountNo(accountUpDownDto.getAccountNo());
-                build.setOutStoreId(accountUpDownDto.getStoreId());
+                build.setOutMerchantNo(accountUpDownDto.getMerchantNo());
                 build.setOut_account_type(accountUpDownDto.getAccountType());
             }
             log.info("account build account flow data:{}", build);
             accountFlowMapper.insert(build);
             AccountDtlVo accountDtlVo = AccountDtlVo.builder()
-                    .storeId(accountUpDownDto.getStoreId())
+                    .merchantNo(accountUpDownDto.getMerchantNo())
                     .accountType(accountUpDownDto.getAccountType())
                     .flowDtlNo(TraceUtil.createTraceId())
                     .flowNo(accountUpDownDto.getFlowNo())
@@ -280,12 +280,12 @@ public class AccountTransactionImpl {
                         .flowNo(accountTransferDto.getFlowNo())
                         .outAccountNo(accountTransferDto.getOutAccountNo())
                         .out_account_type(accountTransferDto.getOutAccountType())
-                        .outStoreId(accountTransferDto.getOutStoreId())
+                        .outMerchantNo(accountTransferDto.getOutMerchantNo())
                         .bizType(accountTransferDto.getBizType())
                         .funCode(accountTransferDto.getFunCode())
                         .inAccountNo(accountTransferDto.getInAccountNo())
                         .in_account_type(accountTransferDto.getInAccountType())
-                        .inStoreId(accountTransferDto.getInStoreId())
+                        .inMerchantNo(accountTransferDto.getInMerchantNo())
                         .amount(new BigDecimal(accountTransferDto.getAmount()))
                         .bizOrderNo(accountTransferDto.getBizOrderNo())
                         .bizOrderDate(accountTransferDto.getBizOrderDate())
@@ -298,7 +298,7 @@ public class AccountTransactionImpl {
                 accountFlowMapper.insert(build);
                 log.info("account transfer insert flow completed:{}", build);
                 AccountDtlVo fromAccountDtlVo = AccountDtlVo.builder()
-                        .storeId(accountTransferDto.getOutStoreId())
+                        .merchantNo(accountTransferDto.getOutMerchantNo())
                         .accountType(accountTransferDto.getOutAccountType())
                         .flowDtlNo(TraceUtil.createTraceId())
                         .flowNo(accountTransferDto.getFlowNo())
@@ -310,7 +310,7 @@ public class AccountTransactionImpl {
                         .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                         .build();
                 AccountDtlVo toAccountDtlVo = AccountDtlVo.builder()
-                        .storeId(accountTransferDto.getInStoreId())
+                        .merchantNo(accountTransferDto.getInMerchantNo())
                         .accountType(accountTransferDto.getInAccountType())
                         .flowDtlNo(TraceUtil.createTraceId())
                         .flowNo(accountTransferDto.getFlowNo())
@@ -326,18 +326,18 @@ public class AccountTransactionImpl {
                 AccountTransferVo result = AccountTransferVo.builder()
                         .inAccountNo(accountTransferDto.getInAccountNo())
                         .inAccountType(accountTransferDto.getInAccountType())
-                        .inStoreId(accountTransferDto.getInStoreId())
+                        .inMerchantNo(accountTransferDto.getInMerchantNo())
                         .inCurBlance(toAccount.getBalance().add(new BigDecimal(accountTransferDto.getAmount())))
                         .outCurBlance(fromAccount.getBalance().subtract(new BigDecimal(accountTransferDto.getAmount())))
                         .outAccountNo(accountTransferDto.getOutAccountNo())
                         .outAccountType(accountTransferDto.getOutAccountType())
-                        .outStoreId(accountTransferDto.getOutStoreId())
+                        .outMerchantNo(accountTransferDto.getOutMerchantNo())
                         .bizType(accountTransferDto.getBizType())
                         .funCode(accountTransferDto.getFunCode())
                         .inAccountNo(accountTransferDto.getInAccountNo())
                         .outAccountNo(accountTransferDto.getOutAccountNo())
                         .outAccountType(accountTransferDto.getOutAccountType())
-                        .outStoreId(accountTransferDto.getOutStoreId())
+                        .outMerchantNo(accountTransferDto.getOutMerchantNo())
                         .bizOrderNo(accountTransferDto.getBizOrderNo())
                         .bizOrderDate(accountTransferDto.getBizOrderDate())
                         .bizOrderTime(accountTransferDto.getBizOrderTime())
@@ -358,7 +358,7 @@ public class AccountTransactionImpl {
             int update = accountMapper.update(null, Wrappers.lambdaUpdate(AccountVo.class)
                     .eq(AccountVo::getAccountNo, freezeDto.getAccountNo())
                     .eq(AccountVo::getAccountType, freezeDto.getAccountType())
-                    .eq(AccountVo::getStoreId, freezeDto.getStoreId())
+                    .eq(AccountVo::getMerchantNo, freezeDto.getMerchantNo())
                     .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
                     .apply(flag,"balance - frozen_balance >= {0}", freezeDto.getAmount())//冻结
                     .ge(!flag,AccountVo::getFrozenBalance,freezeDto.getAmount())//解冻
@@ -382,7 +382,7 @@ public class AccountTransactionImpl {
                     .funCode(freezeDto.getFunCode())
                     .inAccountNo(freezeDto.getAccountNo())
                     .in_account_type(freezeDto.getAccountType())
-                    .inStoreId(freezeDto.getStoreId())
+                    .inMerchantNo(freezeDto.getMerchantNo())
                     .amount(new BigDecimal(freezeDto.getAmount()))
                     .bizOrderNo(freezeDto.getBizOrderNo())
                     .bizOrderDate(freezeDto.getBizOrderDate())
@@ -394,7 +394,7 @@ public class AccountTransactionImpl {
                     .build();
             accountFlowMapper.insert(build);
             AccountDtlVo accountDtlVo = AccountDtlVo.builder()
-                    .storeId(freezeDto.getStoreId())
+                    .merchantNo(freezeDto.getMerchantNo())
                     .accountType(freezeDto.getAccountType())
                     .flowDtlNo(TraceUtil.createTraceId())
                     .flowNo(freezeDto.getFlowNo())
@@ -410,7 +410,7 @@ public class AccountTransactionImpl {
                     .freezeAmount(new BigDecimal(freezeDto.getAmount()))
                     .accountNo(freezeDto.getAccountNo())
                     .accountType(freezeDto.getAccountType())
-                    .storeId(freezeDto.getStoreId())
+                    .merchantNo(freezeDto.getMerchantNo())
                     .bizType(freezeDto.getBizType())
                     .funCode(freezeDto.getFunCode())
                     .frozenBalance(accountVo.getFrozenBalance())

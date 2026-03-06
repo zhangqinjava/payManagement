@@ -10,4 +10,9 @@ public class Const {
     public final static String MERCHANT_NULL_PREFIX = "null:merid:";
     public final static String BANK_LOCK = "bank:lock:";
     public final static String MERCHANT_LOCK = "merchant:lock:";
+    public final static String RATE_PREFIX = "rate:";
+    public final static String RATE_NULL_PREFIX = "null:rate:";
+    public final static String RATE_LOCK= "rate:lock:";
+    public final static String ORDER_LOCK = "order:lock:";
+
 }

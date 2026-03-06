@@ -1,8 +1,6 @@
 package com.al.account.controller;
 
-import com.al.account.bean.dto.AccountFreezeDto;
-import com.al.account.bean.dto.AccountTransferDto;
-import com.al.account.bean.dto.AccountUpDownDto;
+import com.al.account.bean.dto.*;
 import com.al.account.service.accountService.AccountBanlanceService;
 import com.al.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,6 +102,10 @@ public class AccountBanlanceController {
     @PostMapping("/unfreeze")
     public Result unfreeze(@RequestBody @Valid AccountFreezeDto accountFreezeDto) throws Exception {
         return Result.success(accountBanlanceService.unfreeze(accountFreezeDto));
+    }
+    @PostMapping("/query/detail")
+    public Result query(@RequestBody @Valid AccountQueryDto accountDto) throws Exception {
+        return Result.success(null);
     }
 
 }

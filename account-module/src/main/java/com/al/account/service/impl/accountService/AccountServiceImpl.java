@@ -106,7 +106,7 @@ public class AccountServiceImpl implements AccountService {
         try {
             List<AccountVo> accountVos = accountMapper.selectList(Wrappers.lambdaQuery(AccountVo.class)
                     .eq(AccountVo::getAccountNo, accountDto.getAccountNo())
-                    .eq(AccountVo::getStoreId, accountDto.getStoreId())
+                    .eq(AccountVo::getMerchantNo, accountDto.getMerchantNo())
                      .eq(AccountVo::getAccountType, accountDto.getAccountType()));
             return accountVos;
         }catch (Exception e){
@@ -139,7 +139,7 @@ public class AccountServiceImpl implements AccountService {
                     accountMapper.selectCount(
                             Wrappers.lambdaQuery(AccountVo.class)
                                     .eq(AccountVo::getAccountNo, accountDto.getAccountNo())
-                                    .eq(AccountVo::getStoreId, accountDto.getStoreId())
+                                    .eq(AccountVo::getMerchantNo, accountDto.getMerchantNo())
                                     .eq(AccountVo::getAccountType, accountDto.getAccountType())
                     ), accountThreadPool
             ).thenCombine(
