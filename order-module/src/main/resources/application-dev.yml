@@ -23,3 +23,11 @@ spring:
         max-idle: 8
         # 最小空闲连接
         min-idle: 0
+rocketmq:
+  name-server: 127.0.0.1:9876
+  producer:
+    group: order_producer_group
+    send-message-timeout: 5000
+    retry-times-when-send-failed: 3
+  consumer:
+    consume-thread-max: 10

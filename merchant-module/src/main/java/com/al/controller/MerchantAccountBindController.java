@@ -2,19 +2,16 @@ package com.al.controller;
 import com.al.bean.vo.MerchantAccountBindVo;
 import com.al.service.MerchantAccountBindService;
 import com.al.common.result.Result;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/merchant/account")
+@RequestMapping("/account")
 public class MerchantAccountBindController {
-
-    private final MerchantAccountBindService service;
-
-    public MerchantAccountBindController(MerchantAccountBindService service) {
-        this.service = service;
-    }
+    @Autowired
+    private MerchantAccountBindService service;
 
     @PostMapping("/bind")
     public Result bind(@RequestBody MerchantAccountBindVo bind) throws Exception {
@@ -30,8 +27,8 @@ public class MerchantAccountBindController {
     }
 
     @GetMapping("/listByMerchant")
-    public Result listByMerchant(@RequestParam String merchantNo) {
-        List<MerchantAccountBindVo> list = service.getAccountsByMerchant(merchantNo);
+    public Result listByMerchant(@RequestParam String merchantNo, @RequestParam String acctType) {
+        List<MerchantAccountBindVo> list = service.getAccountsByMerchant(merchantNo,acctType);
         return Result.success(list);
     }
 

@@ -4,10 +4,7 @@ import com.al.bean.dto.merchant.CaculateDto;
 import com.al.bean.dto.merchant.MerchantBankDto;
 import com.al.bean.dto.merchant.MerchantDto;
 import com.al.bean.dto.merchant.MerchantFeeDto;
-import com.al.bean.vo.merchant.CaculateVo;
-import com.al.bean.vo.merchant.MerchantBankVo;
-import com.al.bean.vo.merchant.MerchantFeeVo;
-import com.al.bean.vo.merchant.MerchantVo;
+import com.al.bean.vo.merchant.*;
 import com.al.common.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -26,8 +23,10 @@ public interface MerchantFeginClient {
     public Result<MerchantVo>delete(@RequestParam("merchantNo")  String merchantNo) throws Exception;
     @PostMapping("/caculate/fee")
     public Result<CaculateVo>caculate(@RequestBody CaculateDto caculateDto) throws Exception;
-    @GetMapping("/fee/queru")
-    public Result<List<MerchantFeeVo>>queryFee(@RequestParam MerchantFeeDto merchantFeeDto) throws Exception;
+    @GetMapping("/fee/query")
+    public Result<List<MerchantFeeVo>>queryFee(@RequestParam("merchantFeeDto") MerchantFeeDto merchantFeeDto) throws Exception;
     @PostMapping("/bank/query")
     public Result<MerchantBankVo> queryBank(@RequestBody MerchantBankDto merchantBankDto) throws Exception;
+    @GetMapping("/listByMerchant")
+    public Result<List<MerchantAccountBindVo>>listByMerchant(@RequestParam String merchantNo,@RequestParam String acctType) throws Exception;
 }

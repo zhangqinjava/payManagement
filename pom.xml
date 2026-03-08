@@ -25,6 +25,7 @@
         <mybaties-plus-version>3.5.5</mybaties-plus-version>
         <common-module-varsion>1.0-SNAPSHOT</common-module-varsion>
         <fast-json-version>2.0.27</fast-json-version>
+        <rocketmq-version>2.2.2</rocketmq-version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -78,6 +79,11 @@
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
                 <version>5.8.25</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.rocketmq</groupId>
+                <artifactId>rocketmq-spring-boot-starter</artifactId>
+                <version>${rocketmq-version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

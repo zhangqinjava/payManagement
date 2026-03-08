@@ -13,6 +13,6 @@ public enum TradeStatusEnum {
     FAIL(3,"订单失败"),
     CLOSED(4,"订单关闭");
 
-    private  int code;
+    private  Integer code;
     private String msg;
 }

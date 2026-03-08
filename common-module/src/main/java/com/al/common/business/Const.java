@@ -14,5 +14,8 @@ public class Const {
     public final static String RATE_NULL_PREFIX = "null:rate:";
     public final static String RATE_LOCK= "rate:lock:";
     public final static String ORDER_LOCK = "order:lock:";
+    public final static  String SETTLE_CACHE_PREFIX="merchant:settle:";
+    public final static  String SETTLE_NULL_KEY="null:settle:";
+    public final static String SETTLE_LOCK="merchant:settle:lock";
 
 }

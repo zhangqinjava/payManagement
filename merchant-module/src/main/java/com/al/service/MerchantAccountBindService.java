@@ -14,7 +14,7 @@ public interface MerchantAccountBindService {
     void unbindAccount(String merchantNo, String accountNo, String updateUser);
 
     // 查询商户绑定账户列表
-    List<MerchantAccountBindVo> getAccountsByMerchant(String merchantNo);
+    List<MerchantAccountBindVo> getAccountsByMerchant(String merchantNo,String acctType);
 
     // 查询账户绑定商户
     List<MerchantAccountBindVo> getMerchantsByAccount(String accountNo);
