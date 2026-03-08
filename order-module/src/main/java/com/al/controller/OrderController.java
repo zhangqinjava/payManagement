@@ -22,14 +22,6 @@ public class OrderController {
     @PostMapping("/create")
     public Result create(@RequestBody OrderTradeDto orderTradeDto) throws Exception {
         return Result.success(orderService.create(orderTradeDto));
-
-    }
-    @GetMapping("/test")
-    public Result test() {
-        OrderTradeVo build = OrderTradeVo.builder().orderNo(TraceUtil.createTraceId()).build();
-        rocketMQUtil.send(TopicEnum.ACCOUNT_UP.getTopic(), null, build.getOrderNo(),build );
-        return Result.success(build);
-
     }
 
 }
