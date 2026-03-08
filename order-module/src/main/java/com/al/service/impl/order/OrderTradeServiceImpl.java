@@ -3,6 +3,9 @@ package com.al.service.impl.order;
 import com.al.bean.business.TradeStatusEnum;
 import com.al.bean.dto.OrderTradeDto;
 import com.al.bean.vo.OrderTradeVo;
+import com.al.common.business.AccountTradeEnum;
+import com.al.common.business.TopicEnum;
+import com.al.config.RocketMQUtil;
 import com.al.config.factory.ChannelFactory;
 import com.al.fegin.account.AccountFeginClient;
 import com.al.mapper.OrderTradeMapper;
@@ -12,10 +15,12 @@ import com.al.common.exception.BusinessException;
 import com.al.common.util.TraceUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 @Service
 @Slf4j
@@ -26,6 +31,8 @@ public class OrderTradeServiceImpl implements OrderTradeService {
     private ChannelFactory channelFactory;
     @Autowired
     private AccountFeginClient accountFeginClient;
+    @Autowired
+    private RocketMQUtil rocketMQUtil;
 
     @Transactional(rollbackFor = Exception.class)
     public OrderTradeVo createAndPay(OrderTradeDto req) throws Exception {
@@ -38,8 +45,12 @@ public class OrderTradeServiceImpl implements OrderTradeService {
                     .orderDate(req.getOrderDate())
                     .bizType(req.getBizType())
                     .payAmount(req.getAmount())
+                    .channelAmount(BigDecimal.ZERO)
+                    .channelTrace(TraceUtil.createTraceId())//请求通道流水号
                     .payChannel(req.getPayChannel())
                     .tradeStatus(TradeStatusEnum.INIT.getCode())
+                    .accountFlow(TraceUtil.createTraceId())
+                    .accountStatus(AccountTradeEnum.INIT.getCode())
                     .requestTime(LocalDateTime.now())
                     .createTime(LocalDateTime.now())
                     .updateTime(LocalDateTime.now())
@@ -55,7 +66,6 @@ public class OrderTradeServiceImpl implements OrderTradeService {
             // 4. 调用支付渠道
             TradeChannel channel = channelFactory.route(req.getPayChannel());
             Object result = channel.pay(null);
-
             // 5. 更新最终状态
             if (result.equals(TradeStatusEnum.SUCCESS.getCode())) {
                 orderTradeMapper.updateStatus(
@@ -64,7 +74,8 @@ public class OrderTradeServiceImpl implements OrderTradeService {
                         TradeStatusEnum.SUCCESS.getCode(),
                         null
                 );
-                accountFeginClient.up(null);
+                //6.异步上账
+                rocketMQUtil.send(TopicEnum.ACCOUNT_UP.getTopic(), "*", build.getTradeNo(), build);
             } else {
                 orderTradeMapper.updateStatus(
                         build.getTradeNo(),
@@ -142,6 +153,7 @@ public class OrderTradeServiceImpl implements OrderTradeService {
         // 5. 异步通知商户（入消息队列）
 //        merchantNotifyService.asyncNotify(order);
     }
+
 
     @Override
     public OrderTradeVo query(String tradeNo) {

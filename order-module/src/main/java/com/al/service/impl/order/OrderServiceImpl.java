@@ -10,6 +10,7 @@ import com.al.common.business.BusiEnum;
 import com.al.common.business.Const;
 import com.al.common.business.MerchantEnum;
 import com.al.common.exception.BusinessException;
+import com.al.config.RocketMQUtil;
 import com.al.fegin.merchant.MerchantFeginClient;
 import com.al.mapper.OrderTradeMapper;
 import com.al.service.order.OrderService;
@@ -40,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private OrderTradeMapper orderTradeMapper;
     @Autowired
     private OrderTradeService orderTradeService;
+
     @Override
     public OrderTradeVo create(OrderTradeDto orderTradeDto) throws Exception {
         RLock  lock=null;
@@ -70,6 +72,10 @@ public class OrderServiceImpl implements OrderService {
         }catch (Exception e){
             log.error("order create fail message:{}",e.getMessage() );
             throw e;
+        }finally {
+            if (lock != null && lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
 
     }

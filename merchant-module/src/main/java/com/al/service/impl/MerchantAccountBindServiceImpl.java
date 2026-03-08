@@ -59,9 +59,10 @@ public class MerchantAccountBindServiceImpl implements MerchantAccountBindServic
     }
 
     @Override
-    public List<MerchantAccountBindVo> getAccountsByMerchant(String merchantNo) {
+    public List<MerchantAccountBindVo> getAccountsByMerchant(String merchantNo,String acctType) {
         return mapper.selectList(new QueryWrapper<MerchantAccountBindVo>()
                 .eq("merchant_no", merchantNo)
+                .eq("account_type", acctType)
                 .eq("status", 1));
     }
 
