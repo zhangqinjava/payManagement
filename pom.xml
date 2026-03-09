@@ -15,6 +15,7 @@
         <module>order-module</module>
         <module>gateway-module</module>
         <module>fegin-module</module>
+        <module>settle-module</module>
     </modules>
 
     <properties>

@@ -1,10 +1,7 @@
 package com.al.controller;
 
 import com.al.bean.dto.OrderTradeDto;
-import com.al.bean.vo.OrderTradeVo;
 import com.al.common.Result;
-import com.al.common.business.TopicEnum;
-import com.al.common.util.TraceUtil;
 import com.al.config.RocketMQUtil;
 import com.al.service.order.OrderService;
 import lombok.extern.slf4j.Slf4j;
