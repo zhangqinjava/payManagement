@@ -1,0 +1,14 @@
+server:
+  port: 8085
+spring:
+  application:
+    name: settle-module
+xxl:
+  job:
+    addresses: http://127.0.0.1:8080/xxl-job-admin
+    accessToken:
+    appname: ${spring.application.name}
+    ip:
+    port: 9990
+    logretentiondays: 30
+    logpath:

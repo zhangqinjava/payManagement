@@ -35,10 +35,10 @@ public class WxChannelImpl implements TradeChannel {
             request.put("out_trade_no", trade.get("out_trade_no"));
             request.put("total_fee", ((BigDecimal) trade.get("payAmount")).multiply(BigDecimal.valueOf(100)).intValue());
             request.put("currency", trade.get("currency"));
-            request.put("notify_url", "https://xxx.com/pay/callback/wechat");
-
+            request.put("notify_url", "https://localhost:8080/pay/callback/wechat");
             // 2. 签名（示例）
             String privateKey = null;
+            //获取支付通道私钥
             String content = RsaUtil.buildSignContent(request);
             String sign = RsaUtil.sign(content, privateKey);
             request.put("sign", sign);
@@ -46,22 +46,17 @@ public class WxChannelImpl implements TradeChannel {
             // 3. 发送HTTP请求
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-
             HttpEntity<Map<String, Object>> entity =
                     new HttpEntity<>(request, headers);
-
             String url = "https://api.wechatpay.com/pay/unifiedorder";
             String response =
                     RestTemplateUtil.postJson(restTemplate, url, entity, String.class);
-
             log.info("wechat pay response: {}", response);
-
             // 4. 解析响应（示例）
             if (Integer.valueOf(response) == HttpStatus.OK.value()) {
                 // 假设成功
                 return "success";
             }
-
             return "fail";
         }catch (Exception e){
             log.error("wx channel pay error:{}", e.getMessage());
