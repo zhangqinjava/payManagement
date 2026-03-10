@@ -17,5 +17,6 @@ public class Const {
     public final static  String SETTLE_CACHE_PREFIX="merchant:settle:";
     public final static  String SETTLE_NULL_KEY="null:settle:";
     public final static String SETTLE_LOCK="merchant:settle:lock";
+    public final static String FREEZE_PREFIX="freeze:";
 
 }

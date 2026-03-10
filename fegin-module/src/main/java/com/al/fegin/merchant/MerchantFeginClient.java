@@ -28,5 +28,5 @@ public interface MerchantFeginClient {
     @PostMapping("/bank/query")
     public Result<MerchantBankVo> queryBank(@RequestBody MerchantBankDto merchantBankDto) throws Exception;
     @GetMapping("/listByMerchant")
-    public Result<List<MerchantAccountBindVo>>listByMerchant(@RequestParam String merchantNo,@RequestParam String acctType) throws Exception;
+    public Result<List<MerchantAccountBindVo>>listByMerchant(@RequestParam("merchantNo") String merchantNo,@RequestParam("acctType") String acctType) throws Exception;
 }

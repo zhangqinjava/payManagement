@@ -21,4 +21,7 @@ public class ChannelFactory {
         }
         return null;
     }
+    public TradeChannel get(String code) {
+        return channelMap.get(code);
+    }
 }

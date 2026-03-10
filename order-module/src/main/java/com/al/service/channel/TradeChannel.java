@@ -8,4 +8,8 @@ public interface TradeChannel {
     TradeChannelEnum supported();
 
     Object pay(Map<String,Object> trade) throws Exception;
+
+    default boolean healthCheck() {
+        return true;
+    }
 }

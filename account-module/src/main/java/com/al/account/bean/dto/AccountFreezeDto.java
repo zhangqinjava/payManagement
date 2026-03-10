@@ -29,12 +29,9 @@ public class AccountFreezeDto {
     @NotBlank(message = "业务类型不能为空")
     @Pattern(regexp = "0|1",message = "不支持的业务类型")
     private String bizType;
-    @NotBlank(message = "业务订单号不能为空")
     private String bizOrderNo;
-    @NotBlank(message = "业务订单日期不能为空")
     @Pattern(regexp = "\\d{8}$",message = "必须是8位的数字")
     private String bizOrderDate;
-    @NotBlank(message = "业务订单时间不能为空")
     @Pattern(regexp = "\\d{6}$",message = "必须是6位的数字")
     private String bizOrderTime;
     @NotBlank(message = "订单金额不能为空")
