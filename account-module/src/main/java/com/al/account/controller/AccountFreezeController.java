@@ -1,5 +1,6 @@
 package com.al.account.controller;
 
+import com.al.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +16,14 @@ import java.util.concurrent.Executor;
 @RequestMapping("/freeze")
 public class AccountFreezeController{
 
-    @GetMapping("/save")
-    public void save(){
-
+    @GetMapping("/risk")
+    public Result risk(){
+        return Result.success(null);
     }
     @GetMapping("/query")
-    public void query(){
+    public Result query(){
         log.info("query freeze ");
-
+        return Result.success(null);
     }
 
 }

@@ -5,6 +5,7 @@ import com.al.bean.dto.OrderTradeDto;
 import com.al.bean.vo.OrderTradeVo;
 import com.al.common.business.AccountTradeEnum;
 import com.al.common.business.TopicEnum;
+import com.al.config.ChannelRouter;
 import com.al.config.RocketMQUtil;
 import com.al.config.factory.ChannelFactory;
 import com.al.fegin.account.AccountFeginClient;
@@ -34,61 +35,72 @@ public class OrderTradeServiceImpl implements OrderTradeService {
     @Autowired
     private RocketMQUtil rocketMQUtil;
 
+
     @Transactional(rollbackFor = Exception.class)
-    public OrderTradeVo createAndPay(OrderTradeDto req) throws Exception {
+    public OrderTradeVo createAndPay(OrderTradeVo req,Object result) throws Exception {
         try {
-            // 1. 创建交易单
-            OrderTradeVo build = OrderTradeVo.builder()
-                    .tradeNo(TraceUtil.createTraceId())
-                    .merchantNo(req.getMerchantNo())
-                    .orderNo(req.getOrderNo())
-                    .orderDate(req.getOrderDate())
-                    .bizType(req.getBizType())
-                    .payAmount(req.getAmount())
-                    .channelAmount(BigDecimal.ZERO)
-                    .channelTrace(TraceUtil.createTraceId())//请求通道流水号
-                    .payChannel(req.getPayChannel())
-                    .tradeStatus(TradeStatusEnum.INIT.getCode())
-                    .accountFlow(TraceUtil.createTraceId())
-                    .accountStatus(AccountTradeEnum.INIT.getCode())
-                    .requestTime(LocalDateTime.now())
-                    .createTime(LocalDateTime.now())
-                    .updateTime(LocalDateTime.now())
-                    .build();
-            orderTradeMapper.insert(build);
-            // 3. 更新为支付中
-            orderTradeMapper.updateStatus(
-                    build.getTradeNo(),
-                    TradeStatusEnum.INIT.getCode(),
-                    TradeStatusEnum.PAYING.getCode(),
-                    null
-            );
-            // 4. 调用支付渠道
-            TradeChannel channel = channelFactory.route(req.getPayChannel());
-            Object result = channel.pay(null);
-            // 5. 更新最终状态
+            // 1. 更新最终状态
             if (result.equals(TradeStatusEnum.SUCCESS.getCode())) {
                 orderTradeMapper.updateStatus(
-                        build.getTradeNo(),
+                        req.getTradeNo(),
                         TradeStatusEnum.PAYING.getCode(),
                         TradeStatusEnum.SUCCESS.getCode(),
                         null
                 );
-                //6.异步上账
-                rocketMQUtil.send(TopicEnum.ACCOUNT_UP.getTopic(), "*", build.getTradeNo(), build);
+                //2.异步上账
+                rocketMQUtil.send(TopicEnum.ACCOUNT_UP.getTopic(), "*", req.getTradeNo(), req);
             } else {
                 orderTradeMapper.updateStatus(
-                        build.getTradeNo(),
+                        req.getTradeNo(),
                         TradeStatusEnum.PAYING.getCode(),
                         TradeStatusEnum.FAIL.getCode(),
-                        "失败"
+                        "失败"//result,getRetMsg()
                 );
             }
-            return build;
+            return req;
         } catch (Exception e) {
             log.error("交易订单调用通道报错:{}");
             throw e;
         }
+    }
+    @Transactional
+    @Override
+    public OrderTradeVo createOrder(OrderTradeDto req) throws Exception {
+        try {
+            log.info("start create order infomation:{}",req);
+            OrderTradeVo order = buildOrderTradeVo(req);
+            log.info("assembly order infomation:{}",order);
+            orderTradeMapper.insert(order);
+            orderTradeMapper.updateStatus(
+                    order.getTradeNo(),
+                    TradeStatusEnum.INIT.getCode(),
+                    TradeStatusEnum.PAYING.getCode(),
+                    null
+            );
+            return order;
+        }catch (Exception e) {
+            log.error("create order error:{}", e.getMessage());
+            throw e;
+        }
+    }
+    private OrderTradeVo buildOrderTradeVo(OrderTradeDto req) throws Exception {
+        return OrderTradeVo.builder()
+                .tradeNo(TraceUtil.createTraceId())
+                .merchantNo(req.getMerchantNo())
+                .orderNo(req.getOrderNo())
+                .orderDate(req.getOrderDate())
+                .bizType(req.getBizType())
+                .payAmount(req.getAmount())
+                .channelAmount(BigDecimal.ZERO)
+                .channelTrace(TraceUtil.createTraceId())//请求通道流水号
+                .payChannel(req.getPayChannel())
+                .tradeStatus(TradeStatusEnum.INIT.getCode())
+                .accountFlow(TraceUtil.createTraceId())
+                .accountStatus(AccountTradeEnum.INIT.getCode())
+                .requestTime(LocalDateTime.now())
+                .createTime(LocalDateTime.now())
+                .updateTime(LocalDateTime.now())
+                .build();
     }
 
     @Override

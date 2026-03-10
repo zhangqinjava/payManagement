@@ -2,11 +2,13 @@ package com.al.common.exception;
 
 import com.al.common.result.Result;
 import com.al.common.result.ResultEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
@@ -26,6 +28,7 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(Exception.class)
     public Result<?> handleException(Exception e) {
+        log.info(e.getMessage());
         return Result.error("系统报错",null);
     }
 

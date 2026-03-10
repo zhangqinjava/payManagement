@@ -83,7 +83,7 @@ public class AccountBanlanceController {
     }
 
     /**
-     * 冻结
+     * 账户冻结
      * @param accountFreezeDto
      * @return
      * @throws Exception

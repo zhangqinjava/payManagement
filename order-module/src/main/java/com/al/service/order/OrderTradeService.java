@@ -5,7 +5,8 @@ import com.al.bean.vo.OrderTradeVo;
 
 public interface OrderTradeService {
 
-    OrderTradeVo createAndPay(OrderTradeDto request) throws Exception;
+    OrderTradeVo createAndPay(OrderTradeVo request,Object result) throws Exception;
+    OrderTradeVo createOrder(OrderTradeDto request) throws Exception;
 
     void handleCallback(String tradeNo, String channelStatus);
 
