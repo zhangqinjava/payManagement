@@ -43,7 +43,8 @@ public class MerchantRateServiceImpl implements MerchantRateService {
                     .eq(merchantFeeDto.getBizType() != null, MerchantFeeVo::getBizType, merchantFeeDto.getBizType())
                     .eq(merchantFeeDto.getMerchantNo() != null, MerchantFeeVo::getMerchantNo, merchantFeeDto.getMerchantNo())
                     .eq(merchantFeeDto.getStatus() != null, MerchantFeeVo::getStatus, merchantFeeDto.getStatus())
-                    .eq(merchantFeeDto.getEffectiveTime() != null, MerchantFeeVo::getEffectiveTime, merchantFeeDto.getEffectiveTime())
+                    .eq(merchantFeeDto.getFeeType() != null, MerchantFeeVo::getFeeType, merchantFeeDto.getFeeType())
+                    .le(merchantFeeDto.getEffectiveTime() != null, MerchantFeeVo::getEffectiveTime, merchantFeeDto.getEffectiveTime())
                     .eq(merchantFeeDto.getCurrency() != null, MerchantFeeVo::getCurrency, merchantFeeDto.getCurrency())
                     .eq(merchantFeeDto.getCreateUser() != null, MerchantFeeVo::getCreateUser, merchantFeeDto.getCreateUser())
                     .orderByDesc(MerchantFeeVo::getEffectiveTime)
@@ -65,6 +66,7 @@ public class MerchantRateServiceImpl implements MerchantRateService {
                     .rate(merchantFeeDto.getRate())
                     .fixedFee(merchantFeeDto.getFixedFee())
                     .feeMode(Integer.valueOf(merchantFeeDto.getFeeMode()))
+                    .feeType(merchantFeeDto.getFeeType())
                     .merchantNo(merchantFeeDto.getMerchantNo())
                     .currency(merchantFeeDto.getCurrency())
                     .maxFee(merchantFeeDto.getMaxFee())
@@ -86,8 +88,24 @@ public class MerchantRateServiceImpl implements MerchantRateService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String update(MerchantFeeDto merchantFeeDto) throws Exception {
-        return "";
+        try {
+            MerchantFeeVo build = MerchantFeeVo.builder()
+                    .feeType(merchantFeeDto.getFeeType())
+                    .merchantNo(merchantFeeDto.getMerchantNo())
+                    .updateUser(merchantFeeDto.getUpdateUser())
+                    .status(Integer.valueOf(merchantFeeDto.getStatus()))
+                    .build();
+            merchantFeeMapper.update(build,Wrappers.lambdaUpdate(MerchantFeeVo.class).
+                    eq(MerchantFeeVo::getMerchantNo, merchantFeeDto.getMerchantNo())
+                    .eq(MerchantFeeVo::getBizType, merchantFeeDto.getBizType())
+                    .eq(MerchantFeeVo::getEffectiveTime, merchantFeeDto.getEffectiveTime()));
+            return "商户费率更新成功";
+        }catch (Exception e) {
+            log.error("update merchant rate error:{}", e);
+            throw e;
+        }
     }
 
     @Override

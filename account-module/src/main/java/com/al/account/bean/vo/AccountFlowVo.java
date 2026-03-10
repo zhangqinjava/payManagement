@@ -32,6 +32,8 @@ public class AccountFlowVo {
    private String orderDate;
    private BigDecimal amount;
    private String funCode;
+   private String feeType;
+   private BigDecimal feeAmount;
    private String remark;
    private String createTime;
    private String updateTime;

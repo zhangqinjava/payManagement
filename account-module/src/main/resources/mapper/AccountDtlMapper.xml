@@ -34,25 +34,27 @@
     </insert>
     <select id="queryDetail" resultType="com.al.account.bean.vo.AccountQueryDtlVo">
         select
-            flow.id,
-            flow.flow_no,
-            flow.in_account_no,
-            flow.in_merchant_no,
-            flow.in_account_type,
-            flow.out_account_no,
-            flow.out_merchant_no,
-            flow.out_account_type,
-            flow.biz_type,
-            flow.biz_order_no,
-            flow.biz_order_date,
-            flow.biz_order_time,
-            flow.remark,
-            dtl.flow_dtl_no,
-            dtl.amount,
-            dtl.cur_balance,
-            dtl.fun_code,
-            dtl.order_date,
-            dtl.fund_direction
+            dtl.id as id,
+            flow.flow_no as flow_no,
+            flow.in_account_no as in_account_no,
+            flow.in_merchant_no as in_merchant_no,
+            flow.in_account_type as in_account_type,
+            flow.out_account_no as out_account_no,
+            flow.out_merchant_no as out_merchant_no,
+            flow.out_account_type as out_account_type,
+            flow.biz_type as biz_type,
+            flow.biz_order_no as biz_order_no,
+            flow.biz_order_date as biz_order_date,
+            flow.biz_order_time as biz_order_time,
+            flow.fee_type as fee_type,
+            flow.fee_amount as fee_amount,
+            flow.remark as remark,
+            dtl.flow_dtl_no as flow.dtl_no,
+            dtl.amount as amount,
+            dtl.cur_balance as cur_balance,
+            dtl.fun_code as fun_code,
+            dtl.order_date as order_date,
+            dtl.fund_direction as fund_direction
         from t_set_account_flow as flow
                  left join t_set_account_dtl as dtl on flow.flow_no = dtl.flow_no
         <where>
@@ -67,8 +69,7 @@
             </if>
 
         </where>
-        where flow.order_date between '20260101' and '20260401'
-
+        order by desc
     </select>
 
 

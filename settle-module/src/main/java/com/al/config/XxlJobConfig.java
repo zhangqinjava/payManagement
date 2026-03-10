@@ -3,11 +3,13 @@ package com.al.config;
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @Slf4j
+@ConditionalOnProperty(prefix = "xxl.job", name = "enable", havingValue = "true")
 public class XxlJobConfig {
     @Autowired
     private XxlCoreConfigProperties xxlConfig;

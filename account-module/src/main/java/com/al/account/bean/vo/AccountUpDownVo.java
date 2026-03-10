@@ -17,4 +17,6 @@ public class AccountUpDownVo {
     private BigDecimal amount;
     private BigDecimal curBalance;
     private String accountType;
+    private String feeType;
+    private BigDecimal feeAmount;
 }

@@ -5,6 +5,7 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.math.BigDecimal;
 
 @Data
 public class AccountUpDownDto {
@@ -37,6 +38,9 @@ public class AccountUpDownDto {
     @NotBlank(message = "功能码不能为空")
     @Pattern(regexp = "0601|0602|0606|0607|0608",message = "功能码不正确")
     private String funCode;
+    @Pattern(regexp="0|1|2",message = "不支持的费率类型")
+    private String feeType;
+    private BigDecimal feeAmount=new BigDecimal(0);
     private String remark;
 
 

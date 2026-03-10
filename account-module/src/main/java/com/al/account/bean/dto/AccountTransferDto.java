@@ -5,6 +5,8 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.math.BigDecimal;
+
 @Data
 public class AccountTransferDto {
     @NotBlank(message = "流水号不能为空")
@@ -44,4 +46,7 @@ public class AccountTransferDto {
     @Pattern(regexp = "0603")
     private String funCode;
     private String remark;
+    private String feeLender;
+    private String feeType;
+    private BigDecimal feeAmount=BigDecimal.ZERO;
 }

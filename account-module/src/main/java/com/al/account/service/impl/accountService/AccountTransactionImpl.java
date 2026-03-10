@@ -10,9 +10,11 @@ import com.al.account.mapper.AccountFlowMapper;
 import com.al.account.mapper.AccountMapper;
 import com.al.account.mapper.AccountOpenMapper;
 import com.al.common.business.BusiEnum;
+import com.al.common.business.FeeTypeEnum;
 import com.al.common.exception.BusinessException;
 import com.al.common.result.ResultEnum;
 import com.al.common.util.TraceUtil;
+import com.alibaba.nacos.shaded.org.checkerframework.checker.units.qual.C;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +26,7 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -137,60 +136,212 @@ public class AccountTransactionImpl {
     @Transactional(rollbackFor = Exception.class, timeout = 30)
     public AccountUpDownVo upDown(AccountUpDownDto accountUpDownDto) throws Exception {
         try {
-            log.info("account up down balance infomation check completed:{}", accountUpDownDto);
-            int rows = accountMapper.update(
-                    null,
-                    Wrappers.lambdaUpdate(AccountVo.class)
-                            .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo())
-                            .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
-                            .eq(AccountVo::getMerchantNo, accountUpDownDto.getMerchantNo())
-                            .eq(AccountVo::getAccountType, accountUpDownDto.getAccountType())
-                            .apply(BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode() )|| BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()),"balance - frozen_balance >= {0}", accountUpDownDto.getAmount())//下账
-                            .ge(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode()),AccountVo::getTransitBalance, accountUpDownDto.getAmount())//在途下账判断
-                            .setSql(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode()),"balance = balance + " + new BigDecimal(accountUpDownDto.getAmount()))//上账
-                            .setSql(BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()),"balance = balance - " + new BigDecimal(accountUpDownDto.getAmount()))//下账
-                            .setSql(BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()), "transit_balance   = transit_balance  + " + new BigDecimal(accountUpDownDto.getAmount()))//上账到在途
-                            .setSql(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode()), "transit_balance   = transit_balance  - " + new BigDecimal(accountUpDownDto.getAmount()))//上账到在途
-                            .setSql("update_time = now()")
-            );
-            if (rows == 0) {
-                if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
-                    throw new BusinessException("账户上账失败，请检查账户信息");
-                }else if (BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
-                    throw new BusinessException("在途账户余额不足");
-                }else{
-                    throw new BusinessException("账户可用余额不足");
-                }
-            }
+            // // 1 更新余额
+            updateAccount(accountUpDownDto);
             log.info("account up down already completed");
-            AccountVo result = accountMapper.selectOne(Wrappers.lambdaQuery(AccountVo.class)
-                  .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo()));
-            log.info("账户更新后的结果:{}", result);
-            AccountFlowVo build = AccountFlowVo.builder()
+            // 2 查询最新账户
+            AccountVo account = getAccount(accountUpDownDto.getAccountNo());
+            log.info("账户更新后的结果:{}", account);
+            // 3 构建流水
+            AccountFlowVo accountFlowVo = buildFlow(accountUpDownDto);
+            // 4 构建明细
+            List<AccountDtlVo> accountDtlVos = buildDtlList(accountUpDownDto, account);
+            accountFlowMapper.insert(accountFlowVo);
+            accountDtlVos.forEach(accountDtlMapper::insert);
+            log.info("insert  account flow and dtl data completed:{}", account);
+            //组装返回数据
+            return buildResult(accountUpDownDto,account);
+        } catch (Exception e) {
+            log.error("transaction operation down up banlance exception:{}", e.getMessage());
+            if (e instanceof DuplicateKeyException) {
+                throw new BusinessException(ResultEnum.ERROR.getCode(), "流水号重复");
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * 组装上下账返回数据
+     * @param accountUpDownDto
+     * @param accountVo
+     * @return
+     */
+    private AccountUpDownVo buildResult(AccountUpDownDto accountUpDownDto, AccountVo accountVo) {
+
+        AccountUpDownVo accountUpDownVo = AccountUpDownVo.builder().accountNo(accountUpDownDto.getAccountNo())
+                .accountType(accountVo.getAccountType())
+                .flowNo(accountUpDownDto.getFlowNo())
+                .funCode(accountUpDownDto.getFunCode())
+                .amount(new BigDecimal(accountUpDownDto.getAmount()))
+                .bizType(accountUpDownDto.getBizType())
+                .channel_code(accountUpDownDto.getChannelCode())
+                .curBalance(accountVo.getBalance())
+                .feeType(accountUpDownDto.getFeeType())
+                .feeAmount(accountUpDownDto.getFeeAmount())
+                .build();
+        if(isUp(accountUpDownDto.getFunCode())) {
+            accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_C.getCode());
+        } else {
+            accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_D.getCode());
+        }
+        log.info("assesbly return data completed:{}", accountUpDownVo);
+        return accountUpDownVo;
+    }
+
+    /**
+     * 获取账户信息
+     * @param accountNo
+     * @return
+     */
+    private AccountVo getAccount(String accountNo) {
+        return accountMapper.selectOne(
+                Wrappers.lambdaQuery(AccountVo.class)
+                        .eq(AccountVo::getAccountNo, accountNo)
+        );
+    }
+    /**
+     * 更新账户余额信息
+     * @param accountUpDownDto
+     * @throws Exception
+     */
+    public void updateAccount(AccountUpDownDto accountUpDownDto) throws Exception{
+        log.info("account up down balance infomation check completed:{}", accountUpDownDto);
+        int rows = accountMapper.update(
+                null,
+                Wrappers.lambdaUpdate(AccountVo.class)
+                        .eq(AccountVo::getAccountNo, accountUpDownDto.getAccountNo())
+                        .eq(AccountVo::getAccountStatus, BusiEnum.NORMAL.getCode())
+                        .eq(AccountVo::getMerchantNo, accountUpDownDto.getMerchantNo())
+                        .eq(AccountVo::getAccountType, accountUpDownDto.getAccountType())
+                        .apply(BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode() )|| BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()),"balance - frozen_balance >= {0}", accountUpDownDto.getAmount())//下账
+                        .ge(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode()),AccountVo::getTransitBalance, accountUpDownDto.getAmount())//在途下账判断
+                        .setSql(FeeTypeEnum.INTERNAL_BUCKLE.getCode().equals(accountUpDownDto.getFeeType()) && (BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())),"balance = balance + " + (new BigDecimal(accountUpDownDto.getAmount()).subtract(accountUpDownDto.getFeeAmount())))//内扣上账
+                        .setSql(!FeeTypeEnum.INTERNAL_BUCKLE.getCode().equals(accountUpDownDto.getFeeType()) && (BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())),"balance = balance + " + new BigDecimal(accountUpDownDto.getAmount()))//其他上账
+                        .setSql((BusiEnum.FUNCODE_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode())),"balance = balance - " + new BigDecimal(accountUpDownDto.getAmount()))//其他下账
+                        .setSql(BusiEnum.FUNCODE_DOWNWAY.getCode().equals(accountUpDownDto.getFunCode()), "transit_balance   = transit_balance  + " + new BigDecimal(accountUpDownDto.getAmount()))//上账到在途
+                        .setSql(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode()), "transit_balance   = transit_balance  - " + new BigDecimal(accountUpDownDto.getAmount()))//上账到在途
+                        .setSql("update_time = now()")
+        );
+        if (rows == 0) {
+            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())){
+                throw new BusinessException("账户上账失败，请检查账户信息");
+            }else if (BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(accountUpDownDto.getFunCode()) || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
+                throw new BusinessException("在途账户余额不足");
+            }else{
+                throw new BusinessException("账户可用余额不足");
+            }
+        }
+    }
+
+    /**
+     * 组装流水信息
+     * @param accountUpDownDto
+     */
+    private  AccountFlowVo buildFlow(AccountUpDownDto accountUpDownDto){
+        AccountFlowVo build = AccountFlowVo.builder()
+                .flowNo(accountUpDownDto.getFlowNo())
+                .bizType(accountUpDownDto.getBizType())
+                .funCode(accountUpDownDto.getFunCode())
+                .amount(new BigDecimal(accountUpDownDto.getAmount()))
+                .bizOrderNo(accountUpDownDto.getBizOrderNo())
+                .bizOrderDate(accountUpDownDto.getBizOrderDate())
+                .bizOrderTime(accountUpDownDto.getBizOrderTime())
+                .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                .createTime(DateFormat.getDateTimeInstance().format(new Date()))
+                .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
+                .remark(accountUpDownDto.getRemark())
+                .feeType(accountUpDownDto.getFeeType())
+                .feeAmount(accountUpDownDto.getFeeAmount())
+                .build();
+        if(isUp(accountUpDownDto.getFunCode())){
+            build.setInAccountNo(accountUpDownDto.getAccountNo());
+            build.setInMerchantNo(accountUpDownDto.getMerchantNo());
+            build.setIn_account_type(accountUpDownDto.getAccountType());
+        }else{
+            build.setOutAccountNo(accountUpDownDto.getAccountNo());
+            build.setOutMerchantNo(accountUpDownDto.getMerchantNo());
+            build.setOut_account_type(accountUpDownDto.getAccountType());
+        }
+        log.info("account build account flow data:{}", build);
+       return build;
+    }
+
+    /**
+     * 判断是否是上账操作
+     * @param funCode
+     * @return
+     */
+    private boolean isUp(String funCode) {
+        return BusiEnum.FUNCODE_UP.getCode().equals(funCode)
+                || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(funCode);
+    }
+
+    /**
+     * 判断是否是下账操作
+     * @param funCode
+     * @return
+     */
+    private boolean isDown(String funCode) {
+        return BusiEnum.FUNCODE_DOWN.getCode().equals(funCode)
+                || BusiEnum.FUNCODE_DOWNWAY.getCode().equals(funCode)
+                || BusiEnum.FUNCODE_TRANSIT_DOWN.getCode().equals(funCode);
+    }
+
+    /**
+     * 组装上下账明细数据
+     * @param accountUpDownDto
+     * @param result
+     * @return
+     */
+    public List<AccountDtlVo> buildDtlList(AccountUpDownDto accountUpDownDto, AccountVo result){
+        List<AccountDtlVo> dtlList = new ArrayList<>();
+        if (FeeTypeEnum.INTERNAL_BUCKLE.getCode().equals(accountUpDownDto.getFeeType())) {
+            AccountDtlVo accountDtlVo = AccountDtlVo.builder()
+                    .merchantNo(accountUpDownDto.getMerchantNo())
+                    .accountType(accountUpDownDto.getAccountType())
+                    .flowDtlNo(TraceUtil.createTraceId())
                     .flowNo(accountUpDownDto.getFlowNo())
+                    .amount(new BigDecimal(accountUpDownDto.getAmount()))
+                    .fundDirection(BusiEnum.FUN_DIRECTION_C.getCode())
                     .bizType(accountUpDownDto.getBizType())
                     .funCode(accountUpDownDto.getFunCode())
-                    .amount(new BigDecimal(accountUpDownDto.getAmount()))
-                    .bizOrderNo(accountUpDownDto.getBizOrderNo())
-                    .bizOrderDate(accountUpDownDto.getBizOrderDate())
-                    .bizOrderTime(accountUpDownDto.getBizOrderTime())
                     .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                    .createTime(DateFormat.getDateTimeInstance().format(new Date()))
-                    .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
-                    .remark(accountUpDownDto.getRemark())
                     .build();
             if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())
                     || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
-                build.setInAccountNo(accountUpDownDto.getAccountNo());
-                build.setInMerchantNo(accountUpDownDto.getMerchantNo());
-                build.setIn_account_type(accountUpDownDto.getAccountType());
+                accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_C.getCode());
+                accountDtlVo.setAmount(new BigDecimal(accountUpDownDto.getAmount()));
+                accountDtlVo.setCurBalance(result.getBalance().add(accountUpDownDto.getFeeAmount()));
             }else{
-                build.setOutAccountNo(accountUpDownDto.getAccountNo());
-                build.setOutMerchantNo(accountUpDownDto.getMerchantNo());
-                build.setOut_account_type(accountUpDownDto.getAccountType());
+                accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_D.getCode());
+                accountDtlVo.setAmount(new BigDecimal(accountUpDownDto.getAmount()).subtract(accountUpDownDto.getFeeAmount()));
+                accountDtlVo.setCurBalance(result.getBalance().add(accountUpDownDto.getFeeAmount()));
             }
-            log.info("account build account flow data:{}", build);
-            accountFlowMapper.insert(build);
+            dtlList.add(accountDtlVo);
+            //内扣手续费扣除
+            AccountDtlVo feeVo = AccountDtlVo.builder()
+                    .merchantNo(accountUpDownDto.getMerchantNo())
+                    .accountType(accountUpDownDto.getAccountType())
+                    .flowDtlNo(TraceUtil.createTraceId())
+                    .flowNo(accountUpDownDto.getFlowNo())
+                    .amount(accountUpDownDto.getFeeAmount())
+                    .curBalance(result.getBalance())
+                    .fundDirection(BusiEnum.FUN_DIRECTION_D.getCode())
+                    .bizType(accountUpDownDto.getBizType())
+                    .funCode(accountUpDownDto.getFunCode())
+                    .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                    .build();
+            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())
+                    || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
+                feeVo.setFundDirection(BusiEnum.FUN_DIRECTION_D.getCode());
+            }else{
+                feeVo.setFundDirection(BusiEnum.FUN_DIRECTION_D.getCode());
+            }
+            dtlList.add(feeVo);
+            log.info("account build account dtl detail data:{}", dtlList);
+
+        }else{
             AccountDtlVo accountDtlVo = AccountDtlVo.builder()
                     .merchantNo(accountUpDownDto.getMerchantNo())
                     .accountType(accountUpDownDto.getAccountType())
@@ -203,42 +354,19 @@ public class AccountTransactionImpl {
                     .orderDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                     .build();
             if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())
-                || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
+                    || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
                 accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_C.getCode());
             }else{
                 accountDtlVo.setFundDirection(BusiEnum.FUN_DIRECTION_D.getCode());
             }
-            log.info("account build account flow detail data:{}", accountDtlVo);
-            accountDtlMapper.insert(accountDtlVo);
-            AccountUpDownVo accountUpDownVo = AccountUpDownVo.builder().accountNo(accountUpDownDto.getAccountNo())
-                    .accountType(result.getAccountType())
-                    .flowNo(accountUpDownDto.getFlowNo())
-                    .funCode(accountUpDownDto.getFunCode())
-                    .amount(new BigDecimal(accountUpDownDto.getAmount()))
-                    .bizType(accountUpDownDto.getBizType())
-                    .channel_code(accountUpDownDto.getChannelCode())
-                    .curBalance(result.getBalance())
-                    .build();
-            if(BusiEnum.FUNCODE_UP.getCode().equals(accountUpDownDto.getFunCode())
-                || BusiEnum.FUNCODE_TRANSIT_UP.getCode().equals(accountUpDownDto.getFunCode())){
-                accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_C.getCode());
-            }else {
-                accountUpDownVo.setFunDirection(BusiEnum.FUN_DIRECTION_D.getCode());
-            }
-            log.info("account up completed:{}", accountUpDownVo);
-            return accountUpDownVo;
-        } catch (Exception e) {
-            log.error("transaction operation down up banlance exception:{}", e.getMessage());
-            if (e instanceof DuplicateKeyException) {
-                throw new BusinessException(ResultEnum.ERROR.getCode(), "流水号重复");
-            } else {
-                throw e;
-            }
+            dtlList.add(accountDtlVo);
+            log.info("account build account dtl detail data:{}", dtlList);
         }
+        return dtlList;
+
     }
     @Transactional(rollbackFor = Exception.class, timeout = 30)
     public AccountTransferVo transfer(AccountTransferDto accountTransferDto) throws Exception {
-
         try {
                 log.info("start account transfer incoming data:{}", accountTransferDto);
                  List<String> accountNos = Stream.of(accountTransferDto.getOutAccountNo(), accountTransferDto.getInAccountNo())
