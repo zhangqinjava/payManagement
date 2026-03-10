@@ -1,9 +1,11 @@
 package com.al.service.listener;
 
 import com.al.bean.dto.account.AccountUpDownDto;
+import com.al.bean.dto.merchant.MerchantFeeDto;
 import com.al.bean.vo.OrderTradeVo;
 import com.al.bean.vo.account.AccountUpDownVo;
 import com.al.bean.vo.merchant.MerchantAccountBindVo;
+import com.al.bean.vo.merchant.MerchantFeeVo;
 import com.al.common.Result;
 import com.al.common.ResultEnum;
 import com.al.common.business.AccountTradeEnum;
@@ -18,12 +20,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.sql.Wrapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Slf4j
 @Component
@@ -38,6 +44,8 @@ import java.util.List;
     private MerchantFeginClient merchantFeginClient;
     @Autowired
     private OrderTradeMapper orderTradeMapper;
+    @Resource(name = "asyncThreadConfig")
+    private ThreadPoolExecutor threadPoolExecutor;
     @Override
     public void onMessage(OrderTradeVo orderTradeVo) {
         log.info("start execute consumer :{}",orderTradeVo);
@@ -89,5 +97,28 @@ import java.util.List;
             log.error("consumer executer message failed:{}",e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+    public void caculateFee(OrderTradeVo order) throws Exception {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                MerchantFeeDto dto = new MerchantFeeDto();
+                dto.setBizType(order.getBizType());
+                dto.setMerchantNo(order.getMerchantNo());
+                dto.setEffectiveTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+                dto.setStatus(Integer.valueOf(BusiEnum.RATE_NOT_DISABLED.getCode()));
+                Result<List<MerchantFeeVo>> feeList = null;
+                feeList = merchantFeginClient.queryFee(dto);
+                if (CollectionUtils.isEmpty(feeList.getData())) {
+                    return null;
+                }
+                log.info("current consumer :{} select merchantno :{]fee rate  :{]",order.getOrderNo(),order.getMerchantNo(),feeList.getData().get(0));
+                return feeList.getData().get(0);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        },threadPoolExecutor).thenApply(result->{
+            return null;
+        });
+
     }
 }

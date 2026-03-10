@@ -33,4 +33,6 @@ public class AccountQueryDtlVo {
     private String bizOrderDate;
     private String bizOrderTime;
     private String remark;
+    private String feeType;
+    private BigDecimal feeAmount;
 }

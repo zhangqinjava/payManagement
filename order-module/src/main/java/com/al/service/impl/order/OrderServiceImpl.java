@@ -67,7 +67,7 @@ public class OrderServiceImpl implements OrderService {
                  OrderTradeVo andPay = orderTradeService.createAndPay(orderTradeDto);
                  return andPay;
              }else{
-                 throw new BusinessException("订单号重复错误" );
+                 throw new BusinessException("订单号重复" );
              }
         }catch (Exception e){
             log.error("order create fail message:{}",e.getMessage() );

@@ -17,6 +17,8 @@ public class MerchantFeeDto {
     @NotBlank(message = "计费模式不能为空")
     @Pattern(regexp = "1|2|3",message = "不支持的计费类型")
     private String feeMode;
+    @NotBlank(message = "扣款类型不能为空")
+    private String feeType;
     private BigDecimal rate;
     private BigDecimal fixedFee;
     @NotBlank(message = "最低手续费不能为空")

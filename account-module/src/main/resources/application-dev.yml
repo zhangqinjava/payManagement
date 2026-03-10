@@ -4,6 +4,10 @@ spring:
     password: zq199613
     username: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
   redis:
     host: localhost
     port: 6379

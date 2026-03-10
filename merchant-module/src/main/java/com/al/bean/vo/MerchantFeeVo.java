@@ -32,6 +32,10 @@ public class MerchantFeeVo {
      */
     private Integer feeMode;
     /**
+     * 扣款方式 0-内扣 1-外扣 2-线下缴纳
+     */
+    private String feeType;
+    /**
      * 费率(如0.006)
      */
     private BigDecimal rate;
