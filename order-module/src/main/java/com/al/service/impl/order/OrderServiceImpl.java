@@ -1,22 +1,21 @@
 package com.al.service.impl.order;
 
+import com.al.bean.dto.OrderQueryDto;
 import com.al.bean.dto.OrderTradeDto;
-import com.al.bean.dto.merchant.MerchantFeeDto;
 import com.al.bean.vo.OrderTradeVo;
 import com.al.bean.vo.merchant.MerchantVo;
 import com.al.common.Result;
 import com.al.common.ResultEnum;
-import com.al.common.business.BusiEnum;
 import com.al.common.business.Const;
 import com.al.common.business.MerchantEnum;
 import com.al.common.exception.BusinessException;
 import com.al.config.ChannelRouter;
-import com.al.config.RocketMQUtil;
 import com.al.fegin.merchant.MerchantFeginClient;
 import com.al.mapper.OrderTradeMapper;
 import com.al.service.channel.TradeChannel;
 import com.al.service.order.OrderService;
 import com.al.service.order.OrderTradeService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
@@ -25,7 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -87,6 +90,49 @@ public class OrderServiceImpl implements OrderService {
         }
 
     }
+
+    @Override
+    public List<OrderTradeVo> query(OrderQueryDto orderTradeDto) throws Exception {
+        try {
+            log.info("order query start request param:{}", orderTradeDto);
+            // 构建查询条件
+            LambdaQueryWrapper<OrderTradeVo> wrapper =
+                Wrappers.<OrderTradeVo>lambdaQuery();
+            // 必填条件：商户号
+            wrapper.eq(OrderTradeVo::getMerchantNo, orderTradeDto.getMerchantNo());
+            // 可选条件：订单号
+            if (orderTradeDto.getOrderNo() != null && !orderTradeDto.getOrderNo().isEmpty()) {
+                wrapper.eq(OrderTradeVo::getOrderNo, orderTradeDto.getOrderNo());
+            }
+            // 可选条件：业务类型
+            if (orderTradeDto.getBizType() != null && !orderTradeDto.getBizType().isEmpty()) {
+                wrapper.eq(OrderTradeVo::getBizType, orderTradeDto.getBizType());
+            }
+            // 日期范围条件：startDate 和 endDate 格式为 yyyymmdd
+            LocalDate startLocalDate =LocalDate.parse(orderTradeDto.getStartDate(),
+               DateTimeFormatter.BASIC_ISO_DATE);
+            LocalDate endLocalDate = java.time.LocalDate.parse(orderTradeDto.getEndDate(),
+                DateTimeFormatter.BASIC_ISO_DATE);
+            // 验证开始日期不能晚于结束日期
+            if (startLocalDate.isAfter(endLocalDate)) {
+                throw new BusinessException("开始日期不能晚于结束日期");
+            }
+            LocalDateTime startDateTime = startLocalDate.atStartOfDay();
+            LocalDateTime endDateTime = endLocalDate.atTime(23, 59, 59);
+            wrapper.between(OrderTradeVo::getOrderDate, startDateTime, endDateTime);
+            // 按订单创建时间降序排列
+            wrapper.orderByDesc(OrderTradeVo::getOrderDate);
+            // 执行查询
+            List<OrderTradeVo> orderList = orderTradeMapper.selectList(wrapper);
+            log.info("order query success, result size:{}", orderList.size());
+            return orderList;
+        }catch (Exception e){
+            log.error("order query fail message:{}",e.getMessage() );
+            throw e;
+        }
+    }
+
+
     private Object restChannel(OrderTradeDto orderTradeDto) throws Exception {
         try {
             log.info("start request channel operation:{}", orderTradeDto);
