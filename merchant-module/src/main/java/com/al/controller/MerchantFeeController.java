@@ -4,10 +4,7 @@ import com.al.bean.dto.MerchantFeeDto;
 import com.al.service.MerchantRateService;
 import com.al.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -21,7 +18,7 @@ public class MerchantFeeController {
         return Result.success(merchantRateService.query(merchantFeeDto));
     }
     @GetMapping("/save")
-    public Result<Object> save(@Valid  @RequestParam MerchantFeeDto merchantFeeDto) throws Exception {
+    public Result<Object> save(@Valid  @ModelAttribute MerchantFeeDto merchantFeeDto) throws Exception {
         return Result.success(merchantRateService.save(merchantFeeDto));
     }
     @GetMapping("/update")

@@ -2,6 +2,7 @@ package com.al.service.impl;
 
 import com.al.bean.dto.MerchantBankDto;
 import com.al.bean.vo.MerchantBankVo;
+import com.al.bean.vo.MerchantVo;
 import com.al.config.GenericCache;
 import com.al.mapper.MerchantBankMapper;
 import com.al.service.MerchantBankService;
@@ -9,6 +10,7 @@ import com.al.common.business.BusiEnum;
 import com.al.common.business.Const;
 import com.al.common.util.EncrypUtil;
 import com.al.common.exception.BusinessException;
+import com.al.service.MerchantService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -16,16 +18,17 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 
 import java.text.DateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -38,22 +41,24 @@ public class MerchantBankServiceImpl implements MerchantBankService {
     @Autowired
     private RedissonClient redissonClient;
     @Autowired
+    private MerchantService merchantService;
+    @Autowired
     @Qualifier("customRestTemplate")
     private RestTemplate restTemplate;
     @Override
-    public List<MerchantBankVo> query(MerchantBankDto merchantBankDto) {
+    public List<MerchantBankVo> query(MerchantBankDto merchantBankDto) throws Exception {
         try {
-            if (StringUtil.isBlank(merchantBankDto.getMerchantId())) {
+            log.info("merchant query infomation param:{}", merchantBankDto);
+            if (StringUtil.isBlank(merchantBankDto.getMerchantNo())) {
                 throw new BusinessException("商户号为必输选项");
             }
             List<MerchantBankVo> bankList = merchantBankMapper.selectList(Wrappers.lambdaQuery(MerchantBankVo.class)
-                    .eq(MerchantBankVo::getMerchantId, merchantBankDto.getMerchantId())
+                    .eq(MerchantBankVo::getMerchantNo, merchantBankDto.getMerchantNo())
                     .eq(merchantBankDto.getId() != null,MerchantBankVo::getId, merchantBankDto.getId())
                     .eq(merchantBankDto.getIsDefault() != null, MerchantBankVo::getIsDefault, merchantBankDto.getIsDefault())
                     .eq(merchantBankDto.getCardType() != null, MerchantBankVo::getCardType, merchantBankDto.getCardType())
                     .eq(merchantBankDto.getBankCode() != null, MerchantBankVo::getBankCode, merchantBankDto.getBankCode())
-                    .eq(merchantBankDto.getCardName() != null, MerchantBankVo::getCardName, merchantBankDto.getCardName())
-                    .eq(merchantBankDto.getCardNo() != null,MerchantBankVo::getCardNoEncrypt , EncrypUtil.encrypt(merchantBankDto.getCardNo())));
+                    .eq(merchantBankDto.getCardName() != null, MerchantBankVo::getCardName, merchantBankDto.getCardName()));
             return bankList;
         }catch (Exception e){
             log.error("merchantBank information query error", e);
@@ -63,23 +68,23 @@ public class MerchantBankServiceImpl implements MerchantBankService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public MerchantBankVo update(MerchantBankDto merchantBankDto) {
+    public MerchantBankVo update(MerchantBankDto merchantBankDto) throws Exception {
         try {
             MerchantBankVo build = MerchantBankVo.builder()
-                    .merchantId(merchantBankDto.getMerchantId())
+                    .merchantNo(merchantBankDto.getMerchantNo())
                     .bankCode(merchantBankDto.getBankCode())
                     .bankName(merchantBankDto.getBankName())
                     .bindStatus(Integer.valueOf(merchantBankDto.getStatus()))
                     .cardName(merchantBankDto.getCardName())
                     .cardNoEncrypt(EncrypUtil.encrypt(merchantBankDto.getCardNo()))
                     .cardNoMask(Const.ENCRYPT_PREFIX)
-                    .cardType(merchantBankDto.getCardType())
+                    .cardType(Integer.valueOf(merchantBankDto.getCardType()))
                     .isDefault(merchantBankDto.getIsDefault())
-                    .bindTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyymmdd hh:mm:ss")))
+                    .bindTime(LocalDateTime.now())
                     .remark(merchantBankDto.getRemark())
-                    .updatedTime(DateFormat.getDateTimeInstance().format(new Date())).build();
+                    .updatedTime(LocalDateTime.now()).build();
             int num = merchantBankMapper.update(build, Wrappers.lambdaUpdate(MerchantBankVo.class)
-                    .eq(MerchantBankVo::getMerchantId, merchantBankDto.getMerchantId())
+                    .eq(MerchantBankVo::getMerchantNo, merchantBankDto.getMerchantNo())
                     .eq(MerchantBankVo::getId, merchantBankDto.getId()));
             return num > 0 ? build : null;
         }catch (Exception e){
@@ -91,35 +96,38 @@ public class MerchantBankServiceImpl implements MerchantBankService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public MerchantBankVo save(MerchantBankDto merchantBankDto) {
+    public MerchantBankVo save(MerchantBankDto merchantBankDto) throws Exception{
         try{
+            log.info("merchant bank infomation save param:{}",merchantBankDto);
+            MerchantVo result = merchantService.query(merchantBankDto.getMerchantNo());
+            if(Objects.isNull(result)){
+                log.info("merchant infomation not exist");
+                throw new BusinessException("商户信息不存在");
+            }
             //四要素鉴权需要自及去接入来校验 持卡人姓名 持卡人身份证 持卡人卡号 持卡人手机号
             //调用四要素接口
 //            Object o = RestTemplateUtil.postJson(restTemplate, "", Object.class, Object.class);
             //调用银行卡信息获取，卡类型、联行号、
             MerchantBankVo build = MerchantBankVo.builder()
-                    .merchantId(merchantBankDto.getMerchantId())
+                    .merchantNo(merchantBankDto.getMerchantNo())
                     .bankCode(merchantBankDto.getBankCode())
                     .bankName(merchantBankDto.getBankName())
                     .bindStatus(Integer.valueOf(BusiEnum.NORMAL.getCode()))
                     .cardName(merchantBankDto.getCardName())
                     .cardNoEncrypt(EncrypUtil.encrypt(merchantBankDto.getCardNo()))
                     .cardNoMask(Const.ENCRYPT_PREFIX)
-                    .cardType(merchantBankDto.getCardType())
+                    .cardType(Integer.valueOf(merchantBankDto.getCardType()))
                     .isDefault(merchantBankDto.getIsDefault())
-                    .bindTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                    .bindTime(LocalDateTime.now())
                     .remark(merchantBankDto.getRemark())
-                    .updatedTime(DateFormat.getDateTimeInstance().format(new Date()))
-                    .createdTime(DateFormat.getDateTimeInstance().format(new Date())).build();
-            int insert = merchantBankMapper.insert(build);
-            if(insert <=0){
-                throw new BusinessException("新增商户结算卡信息失败");
-            }
+                    .updatedTime(LocalDateTime.now())
+                    .createdTime(LocalDateTime.now()).build();
+             merchantBankMapper.insert(build);
             return build;
         }catch (Exception e){
-            log.error("merchantBank information error", e);
+            log.error("merchantBank information error:{}", e);
             if (e instanceof DuplicateKeyException) {
-                throw new BusinessException("结算卡信息已经存在");
+                throw new BusinessException("商户结算卡信息已经存在");
             }
             throw e;
         }
@@ -127,11 +135,11 @@ public class MerchantBankServiceImpl implements MerchantBankService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String delete(MerchantBankDto merchantBankDto) {
+    public String delete(MerchantBankDto merchantBankDto) throws Exception {
         try {
             int delete = merchantBankMapper.delete(Wrappers.lambdaUpdate(MerchantBankVo.class)
                     .eq(merchantBankDto.getId() != null, MerchantBankVo::getId, merchantBankDto.getId())
-                    .eq(merchantBankDto.getMerchantId() != null, MerchantBankVo::getMerchantId, merchantBankDto.getBankCode())
+                    .eq(merchantBankDto.getMerchantNo() != null, MerchantBankVo::getMerchantNo, merchantBankDto.getBankCode())
                     .eq(merchantBankDto.getCardNo() != null, MerchantBankVo::getIdCardEncrypt, EncrypUtil.encrypt(merchantBankDto.getCardNo())));
             if (delete > 0) {
                 return "删除成功";

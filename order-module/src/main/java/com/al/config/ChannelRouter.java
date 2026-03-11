@@ -4,7 +4,6 @@ import com.al.bean.vo.ChannelConfigVo;
 import com.al.config.factory.ChannelFactory;
 import com.al.mapper.ChannelConfigMapper;
 import com.al.service.channel.TradeChannel;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

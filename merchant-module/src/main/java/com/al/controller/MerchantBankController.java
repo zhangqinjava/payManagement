@@ -14,19 +14,19 @@ public class MerchantBankController {
     @Autowired
     private MerchantBankService merchantBankService;
     @PostMapping("/query")
-    public Result query(@RequestBody  MerchantBankDto merchantBankDto) {
+    public Result query(@RequestBody  MerchantBankDto merchantBankDto) throws Exception {
         return Result.success(merchantBankService.query(merchantBankDto));
     }
     @PostMapping("/save")
-    public Result save(@RequestBody @Valid MerchantBankDto merchantBankDto) {
+    public Result save(@RequestBody @Valid MerchantBankDto merchantBankDto) throws Exception {
         return Result.success(merchantBankService.save(merchantBankDto));
     }
     @PostMapping("/update")
-    public Result update(@RequestBody MerchantBankDto merchantBankDto) {
+    public Result update(@RequestBody MerchantBankDto merchantBankDto) throws Exception {
         return Result.success(merchantBankService.update(merchantBankDto));
     }
     @GetMapping("/delete")
-    public Result delete(MerchantBankDto merchantBankDto) {
+    public Result delete(MerchantBankDto merchantBankDto) throws Exception {
         return Result.success(merchantBankService.delete(merchantBankDto));
     }
 

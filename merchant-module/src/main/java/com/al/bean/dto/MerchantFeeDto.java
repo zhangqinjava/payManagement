@@ -3,6 +3,7 @@ package com.al.bean.dto;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.math.BigDecimal;
 
@@ -21,9 +22,9 @@ public class MerchantFeeDto {
     private String feeType;
     private BigDecimal rate;
     private BigDecimal fixedFee;
-    @NotBlank(message = "最低手续费不能为空")
+    @NotNull(message = "最低手续费不能为空")
     private BigDecimal minFee;
-    @NotBlank(message = "最高手续费不能为空")
+    @NotNull(message = "最高手续费不能为空")
     private BigDecimal maxFee;
     @NotBlank(message = "币种不能为空")
     private String currency;

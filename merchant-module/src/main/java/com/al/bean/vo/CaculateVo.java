@@ -15,7 +15,7 @@ public class CaculateVo {
     private BigDecimal feeAmount;
     private BigDecimal amount;
     private BigDecimal rate;
-    private String merchantId;
+    private String merchantNo;
     private Integer feeMode;
     private Integer busiType;
 
