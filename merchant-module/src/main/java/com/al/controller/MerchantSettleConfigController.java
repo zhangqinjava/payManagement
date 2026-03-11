@@ -12,7 +12,7 @@ public class MerchantSettleConfigController {
     @Autowired
     private MerchantSettleConfigService merchantSettleConfigService;
     @PostMapping("/insert")
-    public Result insert(MerchantSettleBindDTO merchantSettleBindDTO) {
+    public Result insert(@RequestBody MerchantSettleBindDTO merchantSettleBindDTO) {
         return Result.success(merchantSettleConfigService.bindAccount(merchantSettleBindDTO));
     }
     @GetMapping("/query")

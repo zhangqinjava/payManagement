@@ -34,7 +34,9 @@ public class CaculateServiceImpl implements CaculateService {
             BigDecimal feeAmount = BigDecimal.ZERO;
             FeeCalculator strategy = factory.getStrategy(String.valueOf(merchantFeeVo.getFeeMode()));
             feeAmount = strategy.calculate(caculateDto, merchantFeeVo);
-            CaculateVo build = CaculateVo.builder().rate(merchantFeeVo.getRate())
+            CaculateVo build = CaculateVo.builder()
+                    .rate(merchantFeeVo.getRate())
+                    .merchantNo(merchantFeeVo.getMerchantNo())
                     .feeAmount(feeAmount)
                     .amount(caculateDto.getCaculateAmount())
                     .busiType(merchantFeeVo.getBizType())
