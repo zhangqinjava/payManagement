@@ -132,6 +132,18 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    @Override
+    public OrderTradeVo queryByOrderNo(String orderNo) throws Exception {
+        try {
+            log.info("order query start request param:{}", orderNo);
+            return orderTradeMapper.selectOne(Wrappers.<OrderTradeVo>lambdaQuery()
+                    .eq(OrderTradeVo::getOrderNo, orderNo));
+        }catch (Exception e){
+            log.error("order query fail message:{}",e.getMessage() );
+            throw e;
+        }
+    }
+
 
     private Object restChannel(OrderTradeDto orderTradeDto) throws Exception {
         try {

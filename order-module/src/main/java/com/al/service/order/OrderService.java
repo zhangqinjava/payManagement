@@ -11,5 +11,5 @@ import java.util.List;
 public interface OrderService {
     OrderTradeVo create(OrderTradeDto orderTradeDto) throws Exception;
     List<OrderTradeVo> query(OrderQueryDto orderTradeDto) throws Exception;
-
+    OrderTradeVo queryByOrderNo(String orderNo) throws Exception;
 }

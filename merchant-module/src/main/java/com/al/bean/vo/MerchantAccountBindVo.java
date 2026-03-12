@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @Data
 @TableName("merchant_account_bind")
 public class MerchantAccountBindVo {
-
     @TableId(type = IdType.AUTO)
     private Long id;
 
