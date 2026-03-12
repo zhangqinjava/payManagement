@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: settle-module
+  profiles:
+    active: dev
 xxl:
   job:
     enable: true
@@ -12,4 +14,4 @@ xxl:
     ip:
     port: 9990
     logretentiondays: 30
-    logpath:
+    logpath: /log

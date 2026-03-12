@@ -1,4 +1,4 @@
-package com.al.bean.vo;
+package com.al.bean.vo.merchant;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -16,16 +16,24 @@ import java.time.LocalDateTime;
 public class MerchantSettleConfigVo {
 
     private Long id;
+
     private String merchantNo;
+
     private String busiType;
+
+    private String accountNo;
+
+    private String accountType;
+
     private String settleCycle;
+
     private Integer settleDelay;
-    private LocalDateTime effectiveTime;
-    private String originSettleCycle;
-    private Integer originSettleDelay;
-    private LocalDateTime originEffectiveTime;
+
     private Integer status;
+
     private String remark;
+
     private LocalDateTime createTime;
+
     private LocalDateTime updateTime;
 }

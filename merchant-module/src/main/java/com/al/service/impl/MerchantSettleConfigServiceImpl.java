@@ -8,6 +8,7 @@ import com.al.config.GenericCache;
 import com.al.mapper.MerchantSettleConfigMapper;
 import com.al.service.MerchantSettleConfigService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
-public class MerchantSettleConfigServiceImpl implements MerchantSettleConfigService {
+public class MerchantSettleConfigServiceImpl extends ServiceImpl<MerchantSettleConfigMapper,MerchantSettleConfigVo> implements MerchantSettleConfigService {
     @Autowired
     private MerchantSettleConfigMapper merchantSettleConfigMapper;
     @Autowired
@@ -35,12 +36,12 @@ public class MerchantSettleConfigServiceImpl implements MerchantSettleConfigServ
                             .eq(MerchantSettleConfigVo::getBusiType, dto.getBusiType())
             );
             if (config != null) {
-                throw new BusinessException("结算账户已存在");
+                throw new BusinessException("结算账户配置已存在");
             }
             MerchantSettleConfigVo entity = new MerchantSettleConfigVo();
             BeanUtils.copyProperties(dto, entity);
             entity.setStatus(1);
-            merchantSettleConfigMapper.insert(entity);
+            this.save(entity);
             return "结算配置添加成功";
         }catch (Exception e){
             log.error("settle config insert error:{}",e.getMessage());

@@ -8,15 +8,34 @@ spring:
     nacos:
       discovery:
         server-addr: localhost:8848
-        enabled: false
+        enabled: true
     gateway:
       routes:
-        -id: merchant-route
-        uri: lb://merchant-module
-        predicates:
-          -Path=/merchant/**
+        - id: merchant-route
+          uri: lb://merchant-module
+          predicates:
+            - Path=/merchant/**
+        - id: order-route
+          uri: lb://order-module
+          predicates:
+            - Path=/order/**
+        - id: account-route
+          uri: lb://account-module
+          predicates:
+            - Path=/account/**
     sentinel:
-      enabled: false
+      enabled: true
+      transport:
+        dashboard: localhost:8080
+        port: 8719
+      datasource:
+        ds1:
+          nacos:
+            server-addr: localhost:8848
+            data-id: ${spring.application.name}-sentinel-gateway
+            group-id: DEFAULT_GROUP
+            data-type: json
+            rule-type: gw-flow
   redis:
     host: localhost
     port: 6379
