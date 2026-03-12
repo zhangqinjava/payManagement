@@ -1,10 +1,9 @@
 package com.al.controller;
 
+import com.al.bean.dto.OrderQueryDto;
 import com.al.bean.dto.OrderTradeDto;
 import com.al.common.Result;
-import com.al.config.RocketMQUtil;
 import com.al.service.order.OrderService;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +20,13 @@ public class OrderController {
     public Result create(@Valid  @RequestBody OrderTradeDto orderTradeDto) throws Exception {
         return Result.success(orderService.create(orderTradeDto));
     }
-    @GetMapping("/test")
-    public String test() throws Exception {
-        return "test";
+    @PostMapping("/query")
+    public Result query(@RequestBody @Valid OrderQueryDto orderQueryDto) throws Exception {
+        return Result.success(orderService.query(orderQueryDto));
+    }
+    @PostMapping("/update")
+    public Result update(@Valid @RequestBody OrderTradeDto orderTradeDto) throws Exception {
+        return Result.success(null);
     }
 
 }
