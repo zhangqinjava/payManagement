@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component("WX_PAY")
+@Component("2")
 @Slf4j
 public class WxChannelImpl implements TradeChannel {
     @Autowired
@@ -57,7 +57,7 @@ public class WxChannelImpl implements TradeChannel {
                 // 假设成功
                 return "success";
             }
-            return "fail";
+            return "success";
         }catch (Exception e){
             log.error("wx channel pay error:{}", e.getMessage());
             throw e;

@@ -75,6 +75,7 @@ public class OrderServiceImpl implements OrderService {
                  }
                  OrderTradeVo order = orderTradeService.createOrder(orderTradeDto);
                  Object result = restChannel(orderTradeDto);
+                 log.info("channel response:{}",result);
                  OrderTradeVo andPay = orderTradeService.createAndPay(order, result);
                  return andPay;
              }else{
@@ -149,7 +150,7 @@ public class OrderServiceImpl implements OrderService {
         try {
             log.info("start request channel operation:{}", orderTradeDto);
             Map<String, Object> param = buildParam(orderTradeDto);
-            TradeChannel channel = channelRouter.route(orderTradeDto.getMerchantNo());
+            TradeChannel channel = channelRouter.route(orderTradeDto.getMerchantNo(),orderTradeDto.getPayChannel());
             Object result = channel.pay(param);
             log.info("channel response result:{}",result);
             return result;

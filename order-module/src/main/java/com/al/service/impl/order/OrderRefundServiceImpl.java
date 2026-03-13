@@ -12,6 +12,7 @@ import com.al.common.exception.BusinessException;
 import com.al.common.util.TraceUtil;
 import com.al.config.ChannelRouter;
 import com.al.fegin.account.AccountFeginClient;
+import com.al.mapper.OrderRefundTradeMapper;
 import com.al.mapper.OrderTradeMapper;
 import com.al.service.channel.TradeChannel;
 import com.al.service.order.OrderRefundService;
@@ -34,7 +35,7 @@ import java.util.Objects;
 
 @Service
 @Slf4j
-public class OrderRefundServiceImpl extends ServiceImpl<BaseMapper<OrderrefundTradeVo>, OrderrefundTradeVo> implements OrderRefundService {
+public class OrderRefundServiceImpl extends ServiceImpl<OrderRefundTradeMapper, OrderrefundTradeVo> implements OrderRefundService {
     @Autowired
     private OrderTradeMapper orderTradeMapper;
     @Autowired
@@ -176,7 +177,7 @@ public class OrderRefundServiceImpl extends ServiceImpl<BaseMapper<OrderrefundTr
             refundParams.put("payChannel", originalOrder.getPayChannel());
 
             // 获取支付渠道
-            TradeChannel channel = channelRouter.route(refundRecord.getMerchantNo());
+            TradeChannel channel = channelRouter.route(refundRecord.getMerchantNo(),originalOrder.getPayChannel());
 
             // 调用渠道退款接口
             // 注意：TradeChannel接口目前只有pay方法，需要扩展refund方法

@@ -7,10 +7,6 @@ spring:
     name: merchant-module
   profiles:
     active: dev
-  cloud:
-    nacos:
-      discovery:
-        enabled: true
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
