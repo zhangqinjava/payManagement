@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-@Component("ALI_PAY")
+@Component("1")
 public class AlChannelImpl implements TradeChannel {
     @Override
     public TradeChannelEnum supported() {

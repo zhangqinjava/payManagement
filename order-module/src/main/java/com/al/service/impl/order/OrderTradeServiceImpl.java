@@ -40,7 +40,7 @@ public class OrderTradeServiceImpl implements OrderTradeService {
     public OrderTradeVo createAndPay(OrderTradeVo req,Object result) throws Exception {
         try {
             // 1. 更新最终状态
-            if (result.equals(TradeStatusEnum.SUCCESS.getCode())) {
+            if (TradeStatusEnum.SUCCESS.getCode().equals(result)) {
                 orderTradeMapper.updateStatus(
                         req.getTradeNo(),
                         TradeStatusEnum.PAYING.getCode(),

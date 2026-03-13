@@ -13,8 +13,8 @@ import javax.validation.Valid;
 public class MerchantChannelConfigController {
     @Autowired
     private MerchantChannelConfigService merchantChannelConfigService;
-    @GetMapping("/list")
-    public Result list(@RequestParam  MerchantChannelConfigDto merchantChannelConfigDto) throws Exception {
+    @PostMapping("/list")
+    public Result list(@RequestBody  MerchantChannelConfigDto merchantChannelConfigDto) throws Exception {
         return Result.success(merchantChannelConfigService.list(merchantChannelConfigDto));
     }
     @PostMapping("/save")

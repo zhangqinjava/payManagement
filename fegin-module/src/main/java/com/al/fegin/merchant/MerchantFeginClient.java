@@ -1,10 +1,7 @@
 package com.al.fegin.merchant;
 
 import com.al.bean.dto.account.MerchantChannelConfigDto;
-import com.al.bean.dto.merchant.CaculateDto;
-import com.al.bean.dto.merchant.MerchantBankDto;
-import com.al.bean.dto.merchant.MerchantDto;
-import com.al.bean.dto.merchant.MerchantFeeDto;
+import com.al.bean.dto.merchant.*;
 import com.al.bean.vo.merchant.*;
 import com.al.common.Result;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -30,6 +27,6 @@ public interface MerchantFeginClient {
     public Result<MerchantBankVo> queryBank(@RequestBody MerchantBankDto merchantBankDto) throws Exception;
     @GetMapping("/listByMerchant")
     public Result<List<MerchantAccountBindVo>>listByMerchant(@RequestParam("merchantNo") String merchantNo,@RequestParam("acctType") String acctType) throws Exception;
-    @GetMapping("/channel/list")
-    public Result<List<MerchantDto>> list(@RequestParam("merchantChannelConfigDto")  MerchantChannelConfigDto merchantChannelConfigDto) throws Exception;
+    @PostMapping("/channel/list")
+    public Result<List<MerchantChannelConfigVo>> listConfig( @RequestBody  MerchantChannelConfigDto merchantChannelConfigDto) throws Exception;
 }
