@@ -12,4 +12,5 @@ public interface OrderService {
     OrderTradeVo create(OrderTradeDto orderTradeDto) throws Exception;
     List<OrderTradeVo> query(OrderQueryDto orderTradeDto) throws Exception;
     OrderTradeVo queryByOrderNo(String orderNo) throws Exception;
+    String updateStatus(String orderNo) throws Exception;
 }

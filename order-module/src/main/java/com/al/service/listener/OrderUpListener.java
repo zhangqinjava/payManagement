@@ -37,7 +37,8 @@ import java.util.concurrent.ThreadPoolExecutor;
         topic = "ACCOUNT_TOPIC_UP",
         selectorExpression = "*",
         consumerGroup = "order_pay_group"
-)public class OrderUpListener implements RocketMQListener<OrderTradeVo> {
+)
+public class OrderUpListener implements RocketMQListener<OrderTradeVo> {
     @Autowired
     private AccountFeginClient accountFeginClient;
     @Autowired

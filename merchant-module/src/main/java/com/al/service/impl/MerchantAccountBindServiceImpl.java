@@ -22,7 +22,7 @@ public class MerchantAccountBindServiceImpl implements MerchantAccountBindServic
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void bindAccount(MerchantAccountBindVo bind) throws Exception {
+    public MerchantAccountBindVo bindAccount(MerchantAccountBindVo bind) throws Exception {
         // 校验是否已绑定
         QueryWrapper<MerchantAccountBindVo> query = new QueryWrapper<>();
         query.eq("merchant_no", bind.getMerchantNo())
@@ -38,6 +38,7 @@ public class MerchantAccountBindServiceImpl implements MerchantAccountBindServic
         bind.setCreateTime(LocalDateTime.now());
         bind.setUpdateTime(LocalDateTime.now());
         mapper.insert(bind);
+        return bind;
     }
 
     @Override

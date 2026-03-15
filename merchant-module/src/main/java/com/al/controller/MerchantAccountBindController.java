@@ -15,8 +15,7 @@ public class MerchantAccountBindController {
 
     @PostMapping("/bind")
     public Result bind(@RequestBody MerchantAccountBindVo bind) throws Exception {
-        service.bindAccount(bind);
-        return Result.success("绑定成功");
+        return Result.success(service.bindAccount(bind));
     }
 
     @PostMapping("/unbind")

@@ -15,9 +15,10 @@ public class MerchantAccountBindVo {
 
     private String accountNo;
 
-    private Integer accountType;  // 1=结算账户, 2=保证金账户
+    private String accountType;  // 1=结算账户, 2=保证金账户
 
     private Integer status;       // 1=启用, 0=停用
+    private String channelCode;
 
     private LocalDateTime bindTime;
 

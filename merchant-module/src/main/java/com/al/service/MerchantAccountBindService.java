@@ -8,7 +8,7 @@ import java.util.List;
 public interface MerchantAccountBindService {
 
     // 绑定账户
-    void bindAccount(MerchantAccountBindVo bind) throws Exception;
+    MerchantAccountBindVo bindAccount(MerchantAccountBindVo bind) throws Exception;
 
     // 解绑账户
     void unbindAccount(String merchantNo, String accountNo, String updateUser);
