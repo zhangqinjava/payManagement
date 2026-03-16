@@ -5,7 +5,7 @@
         UPDATE order_trade
         SET trade_status = #{newStatus},
             fail_reason = #{failReason},
-            update_time = NOW(),
+            update_time = current_timestamp,
             version = version + 1
         WHERE trade_no = #{tradeNo}
           AND trade_status = #{oldStatus}

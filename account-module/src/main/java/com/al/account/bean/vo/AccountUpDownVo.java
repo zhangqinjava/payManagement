@@ -1,12 +1,16 @@
 package com.al.account.bean.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class AccountUpDownVo {
     private String accountNo;
     private String flowNo;

@@ -19,7 +19,7 @@ spring:
         # 连接池最大连接数
         max-active: 8
         # 最大等待阻塞时间
-        max-wait: -1ms
+        max-wait: 100
         # 最大空闲连接
         max-idle: 8
         # 最小空闲连接
@@ -28,7 +28,7 @@ rocketmq:
   name-server: 127.0.0.1:9876
   producer:
     group: order_producer_group
-    send-message-timeout: 5000
+    send-message-timeout: 10000
     retry-times-when-send-failed: 3
   consumer:
     consume-thread-max: 10

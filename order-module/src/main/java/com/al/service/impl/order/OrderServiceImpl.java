@@ -1,5 +1,6 @@
 package com.al.service.impl.order;
 
+import com.al.bean.business.TradeStatusEnum;
 import com.al.bean.dto.OrderQueryDto;
 import com.al.bean.dto.OrderTradeDto;
 import com.al.bean.vo.OrderTradeVo;
@@ -17,6 +18,7 @@ import com.al.service.order.OrderService;
 import com.al.service.order.OrderTradeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -36,7 +38,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Service
 @Slf4j
-public class OrderServiceImpl implements OrderService {
+public class OrderServiceImpl extends ServiceImpl<OrderTradeMapper,OrderTradeVo> implements OrderService {
     @Autowired
     private MerchantFeginClient merchantFeginClient;
     @Resource(name = "asyncThreadConfig")
@@ -141,6 +143,23 @@ public class OrderServiceImpl implements OrderService {
                     .eq(OrderTradeVo::getOrderNo, orderNo));
         }catch (Exception e){
             log.error("order query fail message:{}",e.getMessage() );
+            throw e;
+        }
+    }
+
+    @Override
+    public String updateStatus(String orderNo) throws Exception {
+        try {
+            OrderTradeVo build = OrderTradeVo.builder().orderNo(orderNo)
+                    .tradeStatus(TradeStatusEnum.SUCCESS.getCode())
+                    .updateTime(LocalDateTime.now())
+                    .build();
+            this.update(build, Wrappers.<OrderTradeVo>lambdaUpdate()
+                    .eq(OrderTradeVo::getOrderNo, orderNo)
+                    .eq(OrderTradeVo::getTradeStatus, TradeStatusEnum.PAYING.getCode()));
+            return "更新成功";
+        }catch (Exception e){
+            log.error("order update fail message:{}",e.getMessage() );
             throw e;
         }
     }

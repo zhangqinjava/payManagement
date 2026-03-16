@@ -40,7 +40,7 @@ public class OrderTradeServiceImpl implements OrderTradeService {
     public OrderTradeVo createAndPay(OrderTradeVo req,Object result) throws Exception {
         try {
             // 1. 更新最终状态
-            if (TradeStatusEnum.SUCCESS.getCode().equals(result)) {
+            if (TradeStatusEnum.SUCCESS.getCode().equals(2)) {
                 orderTradeMapper.updateStatus(
                         req.getTradeNo(),
                         TradeStatusEnum.PAYING.getCode(),
@@ -48,7 +48,7 @@ public class OrderTradeServiceImpl implements OrderTradeService {
                         null
                 );
                 //2.异步上账
-                rocketMQUtil.send(TopicEnum.ACCOUNT_UP.getTopic(), "*", req.getTradeNo(), req);
+                rocketMQUtil.send(TopicEnum.ACCOUNT_UP.getTopic(), "*", req.getAccountFlow(), req);
             } else {
                 orderTradeMapper.updateStatus(
                         req.getTradeNo(),

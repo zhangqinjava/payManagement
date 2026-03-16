@@ -24,6 +24,10 @@ public class OrderController {
     public Result query(@RequestBody @Valid OrderQueryDto orderQueryDto) throws Exception {
         return Result.success(orderService.query(orderQueryDto));
     }
+    @GetMapping("/queryByOrderNo")
+    public Result queryByOrderNo(@RequestParam String orderNo) throws Exception {
+        return Result.success(orderService.queryByOrderNo(orderNo));
+    }
     @PostMapping("/update")
     public Result update(@Valid @RequestBody OrderTradeDto orderTradeDto) throws Exception {
         return Result.success(null);
