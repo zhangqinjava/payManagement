@@ -5,12 +5,14 @@ import com.al.bean.vo.MerchantAccountBindVo;
 import com.al.mapper.MerchantAccountBindMapper;
 import com.al.service.MerchantAccountBindService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class MerchantAccountBindServiceImpl implements MerchantAccountBindService {
 
@@ -61,6 +63,7 @@ public class MerchantAccountBindServiceImpl implements MerchantAccountBindServic
 
     @Override
     public List<MerchantAccountBindVo> getAccountsByMerchant(String merchantNo,String acctType) {
+        log.info("query metchantNo bind account information merchantNo:{} ,acctType:{}",merchantNo,acctType);
         return mapper.selectList(new QueryWrapper<MerchantAccountBindVo>()
                 .eq("merchant_no", merchantNo)
                 .eq("account_type", acctType)

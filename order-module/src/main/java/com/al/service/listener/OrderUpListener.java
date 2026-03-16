@@ -62,23 +62,26 @@ public class OrderUpListener implements RocketMQListener<OrderTradeVo> {
                 log.info("account already success skip:{}", orderTradeVo.getOrderNo());
                 return;
             }
-            Result<List<MerchantAccountBindVo>> listResult = merchantFeginClient.listByMerchant(orderTradeVo.getMerchantNo(), BusiEnum.SETTLE.getCode());
+            Result<List<MerchantAccountBindVo>> listResult = merchantFeginClient.listByMerchant(orderTradeVo.getMerchantNo(), BusiEnum.CASH.getCode());
+            log.info("merchant account bind result:{}",listResult);
             if (CollectionUtils.isEmpty(listResult.getData())) {
                 throw new BusinessException("没有查询到商户绑定的账户信息");
             }
             MerchantAccountBindVo merchantAccountBindVo = listResult.getData().get(0);
             AccountUpDownDto account=new AccountUpDownDto();
-            account.setAccountNo(merchantAccountBindVo.getAccountNo());
-            account.setAccountType(BusiEnum.SETTLE.getCode());
+            account.setAccountNo(merchantAccountBindVo.getAccountNo().trim());
+            account.setAccountType(merchantAccountBindVo.getAccountType());
             account.setMerchantNo(orderTradeVo.getMerchantNo());
             account.setAmount(orderTradeVo.getPayAmount().toString());
             account.setBizOrderDate(orderTradeVo.getOrderDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
             account.setBizOrderTime(orderTradeVo.getOrderDate().format(DateTimeFormatter.ofPattern("HHmmss")));
             account.setBizOrderNo(orderTradeVo.getOrderNo());
             account.setBizType(orderTradeVo.getBizType());
+            account.setChannelCode(orderTradeVo.getPayChannel());
             account.setFlowNo(orderTradeVo.getAccountFlow());
             account.setFunCode(BusiEnum.FUNCODE_UP.getCode());
             Result<AccountUpDownVo> up = accountFeginClient.up(account);
+            log.info("request account response:{}",up);
             if (up.getCode() == ResultEnum.SUCESS.getCode()) {
                 OrderTradeVo build = OrderTradeVo.builder()
                         .accountStatus(AccountTradeEnum.SUCESS.getCode())
@@ -87,12 +90,12 @@ public class OrderUpListener implements RocketMQListener<OrderTradeVo> {
                 orderTradeMapper.update(build, Wrappers.lambdaUpdate(OrderTradeVo.class)
                         .eq(OrderTradeVo::getOrderNo, orderTradeVo.getOrderNo())
                         .eq(OrderTradeVo::getMerchantNo, orderTradeVo.getMerchantNo()));
-                log.info("current consumer update account success status complte:{]",orderTradeVo);
+                log.info("current consumer update account success status complte:{}",orderTradeVo);
             }else{
                 OrderTradeVo build = OrderTradeVo.builder().accountStatus(AccountTradeEnum.FAIL.getCode()).build();
                 orderTradeMapper.update(build, Wrappers.lambdaUpdate(OrderTradeVo.class)
                         .eq(OrderTradeVo::getOrderNo, orderTradeVo.getOrderNo()));
-                log.info("current consumer update account fail status complte:{]",orderTradeVo);
+                log.info("current consumer update account fail status complte:{}",orderTradeVo);
             }
         } catch (Exception e) {
             log.error("consumer executer message failed:{}",e.getMessage());
