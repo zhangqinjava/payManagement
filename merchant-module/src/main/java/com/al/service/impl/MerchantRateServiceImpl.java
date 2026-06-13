@@ -159,8 +159,41 @@ public class MerchantRateServiceImpl implements MerchantRateService {
     }
 
     @Override
-    public String delete(String merchantId) throws Exception {
-        return "";
+    @Transactional(rollbackFor = Exception.class)
+    public String delete(MerchantFeeDto merchantFeeDto) throws Exception {
+        if (merchantFeeDto == null) {
+            throw new BusinessException("请求参数不能为空");
+        }
+        MerchantFeeVo exist = findFeeRecord(merchantFeeDto);
+        if (exist == null) {
+            throw new BusinessException("费率配置不存在");
+        }
+        if (Integer.valueOf(BusiEnum.RATE_DISABLED.getCode()).equals(exist.getStatus())) {
+            return "费率已停用";
+        }
+        MerchantFeeVo update = MerchantFeeVo.builder()
+                .status(Integer.valueOf(BusiEnum.RATE_DISABLED.getCode()))
+                .updateUser(merchantFeeDto.getUpdateUser())
+                .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
+                .build();
+        merchantFeeMapper.update(update, Wrappers.lambdaUpdate(MerchantFeeVo.class)
+                .eq(MerchantFeeVo::getId, exist.getId()));
+        return "商户费率停用成功";
+    }
+
+    private MerchantFeeVo findFeeRecord(MerchantFeeDto merchantFeeDto) {
+        if (merchantFeeDto.getId() != null) {
+            return merchantFeeMapper.selectById(merchantFeeDto.getId());
+        }
+        if (StringUtil.isBlank(merchantFeeDto.getMerchantNo())
+                || StringUtil.isBlank(merchantFeeDto.getBizType())
+                || StringUtil.isBlank(merchantFeeDto.getEffectiveTime())) {
+            throw new BusinessException("请指定费率ID，或提供商户号、业务类型、生效时间");
+        }
+        return merchantFeeMapper.selectOne(Wrappers.lambdaQuery(MerchantFeeVo.class)
+                .eq(MerchantFeeVo::getMerchantNo, merchantFeeDto.getMerchantNo())
+                .eq(MerchantFeeVo::getBizType, Integer.valueOf(merchantFeeDto.getBizType()))
+                .eq(MerchantFeeVo::getEffectiveTime, merchantFeeDto.getEffectiveTime()));
     }
 
     @Override

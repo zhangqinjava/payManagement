@@ -13,6 +13,7 @@ import javax.validation.Valid;
 public class MerchantFeeController {
     @Autowired
     private MerchantRateService merchantRateService;
+
     @GetMapping("/query")
     public Result<Object> query(@RequestParam MerchantFeeDto merchantFeeDto) throws Exception {
         return Result.success(merchantRateService.query(merchantFeeDto));
@@ -22,12 +23,19 @@ public class MerchantFeeController {
     public Result<Object> queryByBody(@RequestBody MerchantFeeDto merchantFeeDto) throws Exception {
         return Result.success(merchantRateService.query(merchantFeeDto));
     }
-    @GetMapping("/save")
-    public Result<Object> save(@Valid  @ModelAttribute MerchantFeeDto merchantFeeDto) throws Exception {
+
+    @PostMapping("/save")
+    public Result<Object> save(@Valid @RequestBody MerchantFeeDto merchantFeeDto) throws Exception {
         return Result.success(merchantRateService.save(merchantFeeDto));
     }
-    @GetMapping("/update")
-    public Result<Object> update(@RequestParam MerchantFeeDto merchantFeeDto) throws Exception {
+
+    @PostMapping("/update")
+    public Result<Object> update(@RequestBody MerchantFeeDto merchantFeeDto) throws Exception {
         return Result.success(merchantRateService.update(merchantFeeDto));
+    }
+
+    @PostMapping("/delete")
+    public Result<Object> delete(@RequestBody MerchantFeeDto merchantFeeDto) throws Exception {
+        return Result.success(merchantRateService.delete(merchantFeeDto));
     }
 }

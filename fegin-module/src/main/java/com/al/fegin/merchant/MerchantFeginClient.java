@@ -12,9 +12,13 @@ import java.util.List;
 @FeignClient(name = "merchant-module",path = "/merchant")
 public interface MerchantFeginClient {
     @PostMapping("/info/save")
-    public Result<MerchantVo> save(@RequestBody MerchantDto merchantDto) throws Exception;
+    Result<MerchantVo> save(@RequestBody MerchantDto merchantDto) throws Exception;
+
+    @PostMapping("/info/saveWithAccount")
+    Result<MerchantOnboardVo> saveWithAccount(@RequestBody MerchantOnboardDto dto) throws Exception;
+
     @PostMapping("/info/update")
-    public Result<MerchantVo>update(@RequestBody  MerchantDto merchantDto) throws Exception;
+    Result<MerchantVo> update(@RequestBody MerchantDto merchantDto) throws Exception;
     @GetMapping("/info/query")
     public Result<MerchantVo>query(@RequestParam("merchantNo")  String merchantNo) throws Exception;
     @GetMapping("/info/delete")
@@ -26,6 +30,15 @@ public interface MerchantFeginClient {
 
     @PostMapping("/fee/query")
     Result<List<MerchantFeeVo>> queryFeeByBody(@RequestBody MerchantFeeDto merchantFeeDto) throws Exception;
+
+    @PostMapping("/fee/save")
+    Result<MerchantFeeVo> saveFee(@RequestBody MerchantFeeDto merchantFeeDto) throws Exception;
+
+    @PostMapping("/fee/update")
+    Result<String> updateFee(@RequestBody MerchantFeeDto merchantFeeDto) throws Exception;
+
+    @PostMapping("/fee/delete")
+    Result<String> deleteFee(@RequestBody MerchantFeeDto merchantFeeDto) throws Exception;
     @PostMapping("/bank/query")
     public Result<MerchantBankVo> queryBank(@RequestBody MerchantBankDto merchantBankDto) throws Exception;
     @GetMapping("/account/listByMerchant")
