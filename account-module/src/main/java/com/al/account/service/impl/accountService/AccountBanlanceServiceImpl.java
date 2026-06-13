@@ -1,9 +1,6 @@
 package com.al.account.service.impl.accountService;
 
-import com.al.account.bean.dto.AccountFreezeDto;
-import com.al.account.bean.dto.AccountQueryDto;
-import com.al.account.bean.dto.AccountTransferDto;
-import com.al.account.bean.dto.AccountUpDownDto;
+import com.al.account.bean.dto.*;
 import com.al.account.bean.vo.*;
 import com.al.account.mapper.AccountDtlMapper;
 import com.al.account.mapper.AccountFlowMapper;
@@ -180,14 +177,103 @@ public class AccountBanlanceServiceImpl implements AccountBanlanceService {
     }
 
     @Override
-    public AccountQueryDtlVo query(AccountQueryDto accountQueryDto) throws Exception {
+    public List<AccountQueryDtlVo> query(AccountQueryDto accountQueryDto) throws Exception {
         try {
-            log.info("account detail query amount start  params:{}", accountQueryDto);
-            return accountDtlMapper.queryDetail(accountQueryDto);
-        }catch (Exception e){
-            log.error("query account transfer detai information exception:{}", e.getMessage());
+            log.info("account detail query start params:{}", accountQueryDto);
+            return accountDtlMapper.queryDetailList(accountQueryDto);
+        } catch (Exception e) {
+            log.error("query account transfer detail information exception:{}", e.getMessage());
             throw e;
         }
+    }
+
+    @Override
+    public AccountFlowVo queryFlow(AccountFlowQueryDto dto) throws Exception {
+        AccountFlowVo flow = accountFlowMapper.selectOne(
+                Wrappers.lambdaQuery(AccountFlowVo.class).eq(AccountFlowVo::getFlowNo, dto.getFlowNo())
+        );
+        if (flow == null) {
+            throw new BusinessException(ResultEnum.ERROR.getCode(), "流水不存在");
+        }
+        return flow;
+    }
+
+    @Override
+    public AccountSummaryVo querySummary(QuerySummaryDto dto) throws Exception {
+        AccountSummaryVo summary = accountDtlMapper.querySummary(dto);
+        if (summary == null) {
+            summary = AccountSummaryVo.builder()
+                    .merchantNo(dto.getMerchantNo())
+                    .accountNo(dto.getAccountNo())
+                    .accountType(dto.getAccountType())
+                    .startDate(dto.getStartDate())
+                    .endDate(dto.getEndDate())
+                    .build();
+        }
+        return summary;
+    }
+
+    @Override
+    public AccountTransferVo settleClear(SettleClearDto dto) throws Exception {
+        AccountTransferDto transferDto = new AccountTransferDto();
+        transferDto.setFlowNo(dto.getFlowNo());
+        transferDto.setOutAccountNo(dto.getOutAccountNo());
+        transferDto.setOutMerchantNo(dto.getOutMerchantNo());
+        transferDto.setOutAccountType(dto.getOutAccountType());
+        transferDto.setInAccountNo(dto.getInAccountNo());
+        transferDto.setInMerchantNo(dto.getInMerchantNo());
+        transferDto.setInAccountType(dto.getInAccountType());
+        transferDto.setAmount(dto.getAmount());
+        transferDto.setBizType(dto.getBizType());
+        transferDto.setBizOrderNo(dto.getBizOrderNo());
+        transferDto.setBizOrderDate(dto.getBizOrderDate());
+        transferDto.setBizOrderTime(dto.getBizOrderTime());
+        transferDto.setChannelCode(dto.getChannelCode() != null ? dto.getChannelCode() : BusiEnum.WX.getCode());
+        transferDto.setRemark(dto.getRemark());
+        transferDto.setFunCode(BusiEnum.FUNCODE_TRANSFER.getCode());
+        return transfer(transferDto);
+    }
+
+    @Override
+    public AccountUpDownVo settlePayout(SettlePayoutDto dto) throws Exception {
+        AccountUpDownDto upDownDto = new AccountUpDownDto();
+        upDownDto.setFlowNo(dto.getFlowNo());
+        upDownDto.setAccountNo(dto.getAccountNo());
+        upDownDto.setMerchantNo(dto.getMerchantNo());
+        upDownDto.setAccountType(dto.getAccountType());
+        upDownDto.setChannelCode(dto.getChannelCode());
+        upDownDto.setBizType(dto.getBizType());
+        upDownDto.setBizOrderNo(dto.getBizOrderNo());
+        upDownDto.setBizOrderDate(dto.getBizOrderDate());
+        upDownDto.setBizOrderTime(dto.getBizOrderTime());
+        upDownDto.setAmount(dto.getAmount());
+        upDownDto.setRemark(dto.getRemark());
+        upDownDto.setFunCode(BusiEnum.FUNCODE_TRANSIT_DOWN.getCode());
+        return transitDown(upDownDto);
+    }
+
+    @Override
+    public BatchUpResultVo batchUp(BatchUpDto dto) throws Exception {
+        BatchUpResultVo result = BatchUpResultVo.builder()
+                .successCount(0)
+                .failCount(0)
+                .successList(new java.util.ArrayList<>())
+                .failMessages(new java.util.ArrayList<>())
+                .build();
+        for (AccountUpDownDto item : dto.getItems()) {
+            try {
+                if (!BusiEnum.FUNCODE_UP.getCode().equals(item.getFunCode())) {
+                    item.setFunCode(BusiEnum.FUNCODE_UP.getCode());
+                }
+                AccountUpDownVo upResult = up(item);
+                result.getSuccessList().add(upResult);
+                result.setSuccessCount(result.getSuccessCount() + 1);
+            } catch (Exception e) {
+                result.getFailMessages().add(item.getFlowNo() + ":" + e.getMessage());
+                result.setFailCount(result.getFailCount() + 1);
+            }
+        }
+        return result;
     }
 
     @Override

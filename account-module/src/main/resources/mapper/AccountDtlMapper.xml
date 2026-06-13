@@ -32,45 +32,72 @@
             )
         </foreach>
     </insert>
-    <select id="queryDetail" resultType="com.al.account.bean.vo.AccountQueryDtlVo">
+
+    <select id="queryDetailList" resultType="com.al.account.bean.vo.AccountQueryDtlVo">
         select
             dtl.id as id,
-            flow.flow_no as flow_no,
-            flow.in_account_no as in_account_no,
-            flow.in_merchant_no as in_merchant_no,
-            flow.in_account_type as in_account_type,
-            flow.out_account_no as out_account_no,
-            flow.out_merchant_no as out_merchant_no,
+            flow.flow_no as flowNo,
+            flow.in_account_no as inAccountNo,
+            flow.in_merchant_no as inMerchantNo,
+            flow.in_account_type as inAccountType,
+            flow.out_account_no as outAccountNo,
+            flow.out_merchant_no as outMerchantNo,
             flow.out_account_type as out_account_type,
-            flow.biz_type as biz_type,
-            flow.biz_order_no as biz_order_no,
-            flow.biz_order_date as biz_order_date,
-            flow.biz_order_time as biz_order_time,
-            flow.fee_type as fee_type,
-            flow.fee_amount as fee_amount,
+            flow.biz_type as bizType,
+            flow.biz_order_no as bizOrderNo,
+            flow.biz_order_date as bizOrderDate,
+            flow.biz_order_time as bizOrderTime,
+            flow.fee_type as feeType,
+            flow.fee_amount as feeAmount,
             flow.remark as remark,
-            dtl.flow_dtl_no as flow.dtl_no,
+            dtl.flow_dtl_no as flowDtlNo,
+            dtl.store_id as merchantNo,
+            dtl.account_type as accountType,
             dtl.amount as amount,
-            dtl.cur_balance as cur_balance,
-            dtl.fun_code as fun_code,
-            dtl.order_date as order_date,
-            dtl.fund_direction as fund_direction
+            dtl.cur_balance as curBalance,
+            dtl.fun_code as funCode,
+            dtl.order_date as orderDate,
+            dtl.fund_direction as fundDirection
         from t_set_account_flow as flow
-                 left join t_set_account_dtl as dtl on flow.flow_no = dtl.flow_no
+        left join t_set_account_dtl as dtl on flow.flow_no = dtl.flow_no
         <where>
-            <if test="dto.startDate != null and dto.endDate != null" >
-                 and dtl.order_date between #{dto.startDate} and #{dto.endDate}
+            <if test="dto.startDate != null and dto.endDate != null">
+                and dtl.order_date between #{dto.startDate} and #{dto.endDate}
             </if>
-            <if test="dto.accountNo != null">
-                 and flow.in_account_no=#{dto.accountNo}
+            <if test="dto.accountNo != null and dto.accountNo != ''">
+                and (flow.in_account_no = #{dto.accountNo} or flow.out_account_no = #{dto.accountNo})
             </if>
-            <if test="dto.acctType != null">
-                and flow.in_account_type=#{dto.acctType}
+            <if test="dto.acctType != null and dto.acctType != ''">
+                and (flow.in_account_type = #{dto.acctType} or flow.out_account_type = #{dto.acctType})
             </if>
-
+            <if test="dto.funcode != null and dto.funcode != ''">
+                and dtl.fun_code = #{dto.funcode}
+            </if>
         </where>
-        order by desc
+        order by dtl.order_date desc, dtl.id desc
     </select>
 
+    <select id="querySummary" resultType="com.al.account.bean.vo.AccountSummaryVo">
+        select
+            #{dto.merchantNo} as merchantNo,
+            #{dto.accountNo} as accountNo,
+            #{dto.accountType} as accountType,
+            #{dto.startDate} as startDate,
+            #{dto.endDate} as endDate,
+            sum(case when dtl.fund_direction = 'C' then dtl.amount else 0 end) as totalCredit,
+            sum(case when dtl.fund_direction = 'D' then dtl.amount else 0 end) as totalDebit,
+            sum(case when dtl.fund_direction = 'F' then dtl.amount else 0 end) as totalFreeze,
+            sum(case when dtl.fund_direction = 'U' then dtl.amount else 0 end) as totalUnfreeze,
+            count(1) as transactionCount
+        from t_set_account_dtl dtl
+        where dtl.store_id = #{dto.merchantNo}
+          and dtl.account_type = #{dto.accountType}
+          and dtl.order_date between #{dto.startDate} and #{dto.endDate}
+          and exists (
+              select 1 from t_set_account_flow f
+              where f.flow_no = dtl.flow_no
+                and (f.in_account_no = #{dto.accountNo} or f.out_account_no = #{dto.accountNo})
+          )
+    </select>
 
 </mapper>

@@ -8,7 +8,7 @@ spring:
     nacos:
       discovery:
         server-addr: localhost:8848
-        enabled: true
+        enabled: false
     gateway:
       routes:
         - id: merchant-route
@@ -24,7 +24,7 @@ spring:
           predicates:
             - Path=/account/**
     sentinel:
-      enabled: true
+      enabled: false
       transport:
         dashboard: localhost:8080
         port: 8719
