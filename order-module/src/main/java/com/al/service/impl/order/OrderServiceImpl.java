@@ -32,18 +32,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @Service
 @Slf4j
-public class OrderServiceImpl extends ServiceImpl<OrderTradeMapper,OrderTradeVo> implements OrderService {
+public class OrderServiceImpl extends ServiceImpl<OrderTradeMapper, OrderTradeVo> implements OrderService {
+
     @Autowired
     private MerchantFeginClient merchantFeginClient;
-    @Resource(name = "asyncThreadConfig")
-    private ThreadPoolExecutor threadPoolExecutor;
-    @Autowired
+    @Resource
     private RedissonClient redissonClient;
     @Autowired
     private OrderTradeMapper orderTradeMapper;
@@ -54,161 +50,122 @@ public class OrderServiceImpl extends ServiceImpl<OrderTradeMapper,OrderTradeVo>
 
     @Override
     public OrderTradeVo create(OrderTradeDto orderTradeDto) throws Exception {
-        RLock  lock=null;
-        boolean flag=false;
-        try{
+        RLock lock = redissonClient.getLock(Const.ORDER_LOCK + orderTradeDto.getOrderNo());
+        boolean locked = false;
+        try {
             log.info("order create event start request param:{}", orderTradeDto);
-             lock = redissonClient.getLock(Const.ORDER_LOCK+orderTradeDto.getOrderNo());
-             //幂等性校验
-             if (flag=lock.tryLock()) {
-                 OrderTradeVo exists = orderTradeMapper.selectOne(
-                         Wrappers.<OrderTradeVo>lambdaQuery()
-                                 .eq(OrderTradeVo::getMerchantNo, orderTradeDto.getMerchantNo())
-                                 .eq(OrderTradeVo::getOrderNo, orderTradeDto.getOrderNo())
-                 );
-                 if (exists != null) {
-                     throw  new BusinessException("订单已经存在");
-                 }
-                 CompletableFuture<MerchantVo> merInfo = getMerInfo(orderTradeDto.getMerchantNo());
-                 MerchantVo merchantVo = merInfo.get();
-                 log.info("当前商户的商户信息:{}",merchantVo);
-                 if (Objects.isNull(merchantVo) || !MerchantEnum.NOMAL.getCode().equals(merchantVo.getStatus())) {
-                     throw new BusinessException("商户状态不正确");
-                 }
-                 OrderTradeVo order = orderTradeService.createOrder(orderTradeDto);
-                 Object result = restChannel(orderTradeDto);
-                 log.info("channel response:{}",result);
-                 OrderTradeVo andPay = orderTradeService.createAndPay(order, result);
-                 return andPay;
-             }else{
-                 throw new BusinessException("订单号重复" );
-             }
-        }catch (Exception e){
-            log.error("order create fail message:{}",e.getMessage() );
+            locked = lock.tryLock();
+            if (!locked) {
+                throw new BusinessException("订单处理中，请勿重复提交");
+            }
+            OrderTradeVo exists = orderTradeMapper.selectOne(
+                    Wrappers.<OrderTradeVo>lambdaQuery()
+                            .eq(OrderTradeVo::getMerchantNo, orderTradeDto.getMerchantNo())
+                            .eq(OrderTradeVo::getOrderNo, orderTradeDto.getOrderNo())
+            );
+            if (exists != null) {
+                throw new BusinessException("订单已经存在");
+            }
+            MerchantVo merchantVo = queryMerchant(orderTradeDto.getMerchantNo());
+            if (merchantVo == null || !MerchantEnum.NOMAL.getCode().equals(merchantVo.getStatus())) {
+                throw new BusinessException("商户状态不正确");
+            }
+            OrderTradeVo order = orderTradeService.createOrder(orderTradeDto);
+            Object channelResult = invokeChannel(orderTradeDto, order);
+            log.info("channel response:{}", channelResult);
+            return orderTradeService.createAndPay(order, channelResult);
+        } catch (Exception e) {
+            log.error("order create fail message:{}", e.getMessage());
             throw e;
-        }finally {
-            if (flag && lock.isHeldByCurrentThread()) {
+        } finally {
+            if (locked && lock.isHeldByCurrentThread()) {
                 lock.unlock();
             }
         }
-
     }
 
     @Override
     public List<OrderTradeVo> query(OrderQueryDto orderTradeDto) throws Exception {
-        try {
-            log.info("order query start request param:{}", orderTradeDto);
-            // 构建查询条件
-            LambdaQueryWrapper<OrderTradeVo> wrapper =
-                Wrappers.<OrderTradeVo>lambdaQuery();
-            // 必填条件：商户号
-            wrapper.eq(OrderTradeVo::getMerchantNo, orderTradeDto.getMerchantNo());
-            // 可选条件：订单号
-            if (orderTradeDto.getOrderNo() != null && !orderTradeDto.getOrderNo().isEmpty()) {
-                wrapper.eq(OrderTradeVo::getOrderNo, orderTradeDto.getOrderNo());
-            }
-            // 可选条件：业务类型
-            if (orderTradeDto.getBizType() != null && !orderTradeDto.getBizType().isEmpty()) {
-                wrapper.eq(OrderTradeVo::getBizType, orderTradeDto.getBizType());
-            }
-            // 日期范围条件：startDate 和 endDate 格式为 yyyymmdd
-            LocalDate startLocalDate =LocalDate.parse(orderTradeDto.getStartDate(),
-               DateTimeFormatter.BASIC_ISO_DATE);
-            LocalDate endLocalDate = java.time.LocalDate.parse(orderTradeDto.getEndDate(),
-                DateTimeFormatter.BASIC_ISO_DATE);
-            // 验证开始日期不能晚于结束日期
-            if (startLocalDate.isAfter(endLocalDate)) {
-                throw new BusinessException("开始日期不能晚于结束日期");
-            }
-            LocalDateTime startDateTime = startLocalDate.atStartOfDay();
-            LocalDateTime endDateTime = endLocalDate.atTime(23, 59, 59);
-            wrapper.between(OrderTradeVo::getOrderDate, startDateTime, endDateTime);
-            // 按订单创建时间降序排列
-            wrapper.orderByDesc(OrderTradeVo::getOrderDate);
-            // 执行查询
-            List<OrderTradeVo> orderList = orderTradeMapper.selectList(wrapper);
-            log.info("order query success, result size:{}", orderList.size());
-            return orderList;
-        }catch (Exception e){
-            log.error("order query fail message:{}",e.getMessage() );
-            throw e;
+        log.info("order query start request param:{}", orderTradeDto);
+        LambdaQueryWrapper<OrderTradeVo> wrapper = Wrappers.lambdaQuery();
+        wrapper.eq(OrderTradeVo::getMerchantNo, orderTradeDto.getMerchantNo());
+        if (orderTradeDto.getOrderNo() != null && !orderTradeDto.getOrderNo().isEmpty()) {
+            wrapper.eq(OrderTradeVo::getOrderNo, orderTradeDto.getOrderNo());
         }
+        if (orderTradeDto.getBizType() != null && !orderTradeDto.getBizType().isEmpty()) {
+            wrapper.eq(OrderTradeVo::getBizType, orderTradeDto.getBizType());
+        }
+        LocalDate startLocalDate = LocalDate.parse(orderTradeDto.getStartDate(), DateTimeFormatter.BASIC_ISO_DATE);
+        LocalDate endLocalDate = LocalDate.parse(orderTradeDto.getEndDate(), DateTimeFormatter.BASIC_ISO_DATE);
+        if (startLocalDate.isAfter(endLocalDate)) {
+            throw new BusinessException("开始日期不能晚于结束日期");
+        }
+        wrapper.between(OrderTradeVo::getOrderDate,
+                startLocalDate.atStartOfDay(),
+                endLocalDate.atTime(23, 59, 59));
+        wrapper.orderByDesc(OrderTradeVo::getOrderDate);
+        List<OrderTradeVo> orderList = orderTradeMapper.selectList(wrapper);
+        log.info("order query success, result size:{}", orderList.size());
+        return orderList;
     }
 
     @Override
     public OrderTradeVo queryByOrderNo(String orderNo) throws Exception {
-        try {
-            log.info("order query start request param:{}", orderNo);
-            return orderTradeMapper.selectOne(Wrappers.<OrderTradeVo>lambdaQuery()
-                    .eq(OrderTradeVo::getOrderNo, orderNo));
-        }catch (Exception e){
-            log.error("order query fail message:{}",e.getMessage() );
-            throw e;
+        if (orderNo == null || orderNo.isEmpty()) {
+            throw new BusinessException("订单号不能为空");
         }
+        OrderTradeVo order = orderTradeMapper.selectOne(Wrappers.<OrderTradeVo>lambdaQuery()
+                .eq(OrderTradeVo::getOrderNo, orderNo));
+        if (order == null) {
+            throw new BusinessException("订单不存在");
+        }
+        return order;
     }
 
     @Override
     public String updateStatus(String orderNo) throws Exception {
-        try {
-            OrderTradeVo build = OrderTradeVo.builder().orderNo(orderNo)
-                    .tradeStatus(TradeStatusEnum.SUCCESS.getCode())
-                    .updateTime(LocalDateTime.now())
-                    .build();
-            this.update(build, Wrappers.<OrderTradeVo>lambdaUpdate()
-                    .eq(OrderTradeVo::getOrderNo, orderNo)
-                    .eq(OrderTradeVo::getTradeStatus, TradeStatusEnum.PAYING.getCode()));
-            return "更新成功";
-        }catch (Exception e){
-            log.error("order update fail message:{}",e.getMessage() );
-            throw e;
+        OrderTradeVo order = queryByOrderNo(orderNo);
+        if (!TradeStatusEnum.PAYING.getCode().equals(order.getTradeStatus())) {
+            throw new BusinessException("仅支付中订单可更新为成功");
         }
+        OrderTradeVo build = OrderTradeVo.builder()
+                .tradeStatus(TradeStatusEnum.SUCCESS.getCode())
+                .successTime(LocalDateTime.now())
+                .updateTime(LocalDateTime.now())
+                .build();
+        int updated = orderTradeMapper.update(build, Wrappers.<OrderTradeVo>lambdaUpdate()
+                .eq(OrderTradeVo::getOrderNo, orderNo)
+                .eq(OrderTradeVo::getTradeStatus, TradeStatusEnum.PAYING.getCode()));
+        if (updated == 0) {
+            throw new BusinessException("订单状态更新失败");
+        }
+        return "更新成功";
     }
 
-
-    private Object restChannel(OrderTradeDto orderTradeDto) throws Exception {
-        try {
-            log.info("start request channel operation:{}", orderTradeDto);
-            Map<String, Object> param = buildParam(orderTradeDto);
-            TradeChannel channel = channelRouter.route(orderTradeDto.getMerchantNo(),orderTradeDto.getPayChannel());
-            Object result = channel.pay(param);
-            log.info("channel response result:{}",result);
-            return result;
-        }catch (Exception e){
-            log.error("request channel  fail message:{}",e.getMessage() );
-            throw e;
-        }
+    private Object invokeChannel(OrderTradeDto orderTradeDto, OrderTradeVo order) throws Exception {
+        Map<String, Object> param = buildChannelParam(orderTradeDto, order);
+        TradeChannel channel = channelRouter.route(orderTradeDto.getMerchantNo(), orderTradeDto.getPayChannel());
+        return channel.pay(param);
     }
-    private Map<String,Object> buildParam(OrderTradeDto dto){
-        //根据每个通道的需要的字段组装数据
-        Map<String,Object> param = new HashMap<>();
-        param.put("orderNo",dto.getOrderNo());
-        param.put("merchantNo",dto.getMerchantNo());
+
+    private Map<String, Object> buildChannelParam(OrderTradeDto dto, OrderTradeVo order) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("orderNo", dto.getOrderNo());
+        param.put("merchantNo", dto.getMerchantNo());
+        param.put("tradeNo", order.getTradeNo());
+        param.put("out_trade_no", order.getTradeNo());
+        param.put("payAmount", dto.getAmount());
+        param.put("channelTrace", order.getChannelTrace());
+        param.put("payChannel", dto.getPayChannel());
+        param.put("terminalNo", dto.getTerminalNo());
         return param;
     }
-    public  CompletableFuture<MerchantVo> getMerInfo(String merchantNo) throws Exception {
-        CompletableFuture<MerchantVo> merInfo = CompletableFuture.supplyAsync(() -> {
-            try {
-                Result<MerchantVo> qmerchantInfo = merchantFeginClient.query(merchantNo);
-                if (Objects.nonNull(qmerchantInfo) && ResultEnum.SUCESS.getCode() != qmerchantInfo.getCode()) {
-                    throw new BusinessException(qmerchantInfo.getMsg());
-                }
-                return qmerchantInfo.getData();
-            } catch (Exception e) {
-                throw new BusinessException("商户系统失败");
 
-            }
-        }, threadPoolExecutor).handle((result,ex)->{
-            if (ex != null) {
-                Throwable cause = ex.getCause();
-                log.error("查询商户异常", cause);
-                if (cause instanceof BusinessException) {
-                    throw (BusinessException) cause;
-                }
-                throw new BusinessException("商户系统调用失败");
-            }
-            return result;
-        });
-        return merInfo;
+    private MerchantVo queryMerchant(String merchantNo) throws Exception {
+        Result<MerchantVo> result = merchantFeginClient.query(merchantNo);
+        if (result == null || result.getCode() != ResultEnum.SUCESS.getCode()) {
+            throw new BusinessException(result != null ? result.getMsg() : "商户系统调用失败");
+        }
+        return result.getData();
     }
-
 }

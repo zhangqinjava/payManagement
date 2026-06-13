@@ -56,7 +56,7 @@ public class RocketMQUtil {
                     topic, tag, key, result);
         } catch (Exception e) {
             log.error("顺序MQ发送失败 topic={} key={}", topic, key, e);
-            throw new RuntimeException("MQ发送失败");
+            throw new BusinessException("MQ发送失败");
         }
 
     }

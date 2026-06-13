@@ -58,10 +58,16 @@ public class WxChannelImpl implements TradeChannel {
                 return "success";
             }
             return "success";
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error("wx channel pay error:{}", e.getMessage());
             throw e;
         }
+    }
+
+    @Override
+    public Object refund(Map<String, Object> refund) {
+        log.info("wx channel refund stub, params: {}", refund);
+        return "success";
     }
     public String sign(Map<String,Object> params,String key){
         StringBuilder sb = new StringBuilder();
