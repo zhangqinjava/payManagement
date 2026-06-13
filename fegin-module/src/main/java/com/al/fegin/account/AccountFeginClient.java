@@ -62,4 +62,13 @@ public interface AccountFeginClient {
 
     @PostMapping("/operation/query/summary")
     Result<AccountSummaryVo> querySummary(@RequestBody QuerySummaryDto dto);
+
+    @PostMapping("/operation/settle/clear")
+    Result<AccountTransferVo> settleClear(@RequestBody SettleClearDto dto);
+
+    @PostMapping("/operation/settle/payout")
+    Result<AccountUpDownVo> settlePayout(@RequestBody SettlePayoutDto dto);
+
+    @PostMapping("/operation/batch/up")
+    Result<BatchUpResultVo> batchUp(@RequestBody BatchUpDto dto);
 }

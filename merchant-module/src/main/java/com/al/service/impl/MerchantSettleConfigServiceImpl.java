@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+
 @Service
 @Slf4j
 public class MerchantSettleConfigServiceImpl extends ServiceImpl<MerchantSettleConfigMapper,MerchantSettleConfigVo> implements MerchantSettleConfigService {
@@ -24,6 +26,7 @@ public class MerchantSettleConfigServiceImpl extends ServiceImpl<MerchantSettleC
     private MerchantSettleConfigMapper merchantSettleConfigMapper;
     @Autowired
     private GenericCache genericCache;
+    @Resource
     private RedissonClient redissonClient;
 
     @Override
@@ -51,38 +54,41 @@ public class MerchantSettleConfigServiceImpl extends ServiceImpl<MerchantSettleC
 
     @Override
     public MerchantSettleConfigVo queryByMerchant(String merchantNo, String busiType) {
+        String cacheKey = Const.SETTLE_CACHE_PREFIX + merchantNo + busiType;
         try {
-            MerchantSettleConfigVo merchantSettleConfigVo = genericCache.get(Const.SETTLE_CACHE_PREFIX + merchantNo + busiType, MerchantSettleConfigVo.class);
-            if (merchantSettleConfigVo != null) {
-                return merchantSettleConfigVo;
+            MerchantSettleConfigVo cached = genericCache.get(cacheKey, MerchantSettleConfigVo.class);
+            if (cached != null) {
+                return cached;
             }
-            if (genericCache.isNullCached(Const.SETTLE_NULL_KEY + merchantNo + busiType)) {
+            if (genericCache.isNullCached(cacheKey)) {
                 return null;
             }
             RLock lock = redissonClient.getLock(Const.SETTLE_LOCK + merchantNo + busiType);
-            try{
-                lock.lock();
+            try {
+                if (!lock.tryLock()) {
+                    return genericCache.get(cacheKey, MerchantSettleConfigVo.class);
+                }
+                cached = genericCache.get(cacheKey, MerchantSettleConfigVo.class);
+                if (cached != null) {
+                    return cached;
+                }
                 MerchantSettleConfigVo config = merchantSettleConfigMapper.selectOne(Wrappers.<MerchantSettleConfigVo>lambdaQuery()
                         .eq(MerchantSettleConfigVo::getMerchantNo, merchantNo)
                         .eq(MerchantSettleConfigVo::getBusiType, busiType)
                 );
                 if (config == null) {
-                    genericCache.set(Const.SETTLE_NULL_KEY+merchantNo+busiType, config);
+                    genericCache.cacheNull(cacheKey);
                     return null;
                 }
-                genericCache.set(Const.SETTLE_CACHE_PREFIX+merchantNo+busiType, config);
+                genericCache.set(cacheKey, config);
                 return config;
-
-            }catch (Exception e){
-                log.error("query database error:{}",e.getMessage());
-                throw e;
-            }finally {
-                if(lock.isLocked() && lock.isHeldByCurrentThread()){
+            } finally {
+                if (lock.isHeldByCurrentThread()) {
                     lock.unlock();
                 }
             }
-        }catch (Exception e){
-            log.error("queryByMerchant error:{}",e.getMessage());
+        } catch (Exception e) {
+            log.error("queryByMerchant error:{}", e.getMessage());
             throw e;
         }
     }

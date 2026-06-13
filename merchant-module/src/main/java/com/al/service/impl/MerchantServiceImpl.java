@@ -15,11 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.yaml.snakeyaml.constructor.DuplicateKeyException;
 import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.util.Date;
@@ -93,23 +93,7 @@ public class MerchantServiceImpl implements MerchantService {
                     .updateTime(DateFormat.getDateTimeInstance().format(new Date()))
                     .build();
             merchantMapper.update(build,Wrappers.lambdaUpdate(MerchantVo.class).eq(MerchantVo::getMerchantNo, merchantDto.getMerchantNo()));
-            // 2. 删除缓存（让下一次读回源）
-            TransactionSynchronizationManager.registerSynchronization(
-                    new TransactionSynchronizationAdapter() {
-                        @Override
-                        public void afterCommit() {
-                            genericCache.delete(Const.MERCHANT_PREFIX+merchantDto.getMerchantNo());
-
-                            // 延迟双删
-                            CompletableFuture.runAsync(() -> {
-                                try {
-                                    Thread.sleep(500);
-                                } catch (InterruptedException ignored) {}
-                                genericCache.delete(Const.MERCHANT_PREFIX+merchantDto.getMerchantNo());
-                            },threadPoolExecutor);
-                        }
-                    }
-            );
+            invalidateMerchantCache(merchantDto.getMerchantNo());
             return build;
         }catch (Exception e){
             log.error("update merchant information fail:{} ", e.getMessage());
@@ -125,22 +109,7 @@ public class MerchantServiceImpl implements MerchantService {
                 throw new BusinessException("商户号不能为空");
             }
             merchantMapper.delete(Wrappers.lambdaUpdate(MerchantVo.class).eq(MerchantVo::getMerchantNo, merchantNo));
-            TransactionSynchronizationManager.registerSynchronization(
-                    new TransactionSynchronizationAdapter() {
-                        @Override
-                        public void afterCommit() {
-                            genericCache.delete(Const.MERCHANT_PREFIX+merchantNo);
-
-                            // 延迟双删
-                            CompletableFuture.runAsync(() -> {
-                                try {
-                                    Thread.sleep(500);
-                                } catch (InterruptedException ignored) {}
-                                genericCache.delete(Const.MERCHANT_PREFIX+merchantNo);
-                            },threadPoolExecutor);
-                        }
-                    }
-            );
+            invalidateMerchantCache(merchantNo);
             return "删除成功";
         }catch (Exception e){
             log.error("delete merchant information fail:{} ", e.getMessage());
@@ -202,6 +171,25 @@ public class MerchantServiceImpl implements MerchantService {
             log.error("query merchant information fail:{} ", e.getMessage());
             throw e;
         }
+    }
+
+    private void invalidateMerchantCache(String merchantNo) {
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        genericCache.delete(Const.MERCHANT_PREFIX + merchantNo);
+                        CompletableFuture.runAsync(() -> {
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException ignored) {
+                                Thread.currentThread().interrupt();
+                            }
+                            genericCache.delete(Const.MERCHANT_PREFIX + merchantNo);
+                        }, threadPoolExecutor);
+                    }
+                }
+        );
     }
 
 }

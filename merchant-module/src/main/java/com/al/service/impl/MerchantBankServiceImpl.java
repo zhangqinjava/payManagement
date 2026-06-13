@@ -139,7 +139,7 @@ public class MerchantBankServiceImpl implements MerchantBankService {
         try {
             int delete = merchantBankMapper.delete(Wrappers.lambdaUpdate(MerchantBankVo.class)
                     .eq(merchantBankDto.getId() != null, MerchantBankVo::getId, merchantBankDto.getId())
-                    .eq(merchantBankDto.getMerchantNo() != null, MerchantBankVo::getMerchantNo, merchantBankDto.getBankCode())
+                    .eq(merchantBankDto.getMerchantNo() != null, MerchantBankVo::getMerchantNo, merchantBankDto.getMerchantNo())
                     .eq(merchantBankDto.getCardNo() != null, MerchantBankVo::getIdCardEncrypt, EncrypUtil.encrypt(merchantBankDto.getCardNo())));
             if (delete > 0) {
                 return "删除成功";

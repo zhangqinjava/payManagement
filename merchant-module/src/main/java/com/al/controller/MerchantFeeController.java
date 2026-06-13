@@ -17,6 +17,11 @@ public class MerchantFeeController {
     public Result<Object> query(@RequestParam MerchantFeeDto merchantFeeDto) throws Exception {
         return Result.success(merchantRateService.query(merchantFeeDto));
     }
+
+    @PostMapping("/query")
+    public Result<Object> queryByBody(@RequestBody MerchantFeeDto merchantFeeDto) throws Exception {
+        return Result.success(merchantRateService.query(merchantFeeDto));
+    }
     @GetMapping("/save")
     public Result<Object> save(@Valid  @ModelAttribute MerchantFeeDto merchantFeeDto) throws Exception {
         return Result.success(merchantRateService.save(merchantFeeDto));

@@ -26,7 +26,8 @@ public class MerchantAccountBindController {
     }
 
     @GetMapping("/listByMerchant")
-    public Result listByMerchant(@RequestParam String merchantNo, @RequestParam String acctType) {
+    public Result listByMerchant(@RequestParam String merchantNo,
+                                 @RequestParam(required = false) String acctType) {
         List<MerchantAccountBindVo> list = service.getAccountsByMerchant(merchantNo,acctType);
         return Result.success(list);
     }

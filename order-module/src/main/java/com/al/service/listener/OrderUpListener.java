@@ -111,7 +111,7 @@ public class OrderUpListener implements RocketMQListener<OrderTradeVo> {
                 dto.setEffectiveTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
                 dto.setStatus(Integer.valueOf(BusiEnum.RATE_NOT_DISABLED.getCode()));
                 Result<List<MerchantFeeVo>> feeList = null;
-                feeList = merchantFeginClient.queryFee(dto);
+                feeList = merchantFeginClient.queryFeeByBody(dto);
                 if (CollectionUtils.isEmpty(feeList.getData())) {
                     return null;
                 }

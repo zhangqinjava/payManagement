@@ -5,6 +5,7 @@ import com.al.bean.dto.OrderRefundTradeDto;
 import com.al.bean.dto.account.AccountUpDownDto;
 import com.al.bean.vo.OrderTradeVo;
 import com.al.bean.vo.OrderrefundTradeVo;
+import com.al.bean.vo.merchant.MerchantAccountBindVo;
 import com.al.common.Result;
 import com.al.common.ResultEnum;
 import com.al.common.business.BusiEnum;
@@ -12,6 +13,7 @@ import com.al.common.exception.BusinessException;
 import com.al.common.util.TraceUtil;
 import com.al.config.ChannelRouter;
 import com.al.fegin.account.AccountFeginClient;
+import com.al.fegin.merchant.MerchantFeginClient;
 import com.al.mapper.OrderRefundTradeMapper;
 import com.al.mapper.OrderTradeMapper;
 import com.al.service.channel.TradeChannel;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +43,8 @@ public class OrderRefundServiceImpl extends ServiceImpl<OrderRefundTradeMapper, 
     private OrderTradeMapper orderTradeMapper;
     @Autowired
     private AccountFeginClient accountFeginClient;
+    @Autowired
+    private MerchantFeginClient merchantFeginClient;
     @Autowired
     private ChannelRouter channelRouter;
 
@@ -118,15 +123,10 @@ public class OrderRefundServiceImpl extends ServiceImpl<OrderRefundTradeMapper, 
             throw new BusinessException("只有成功的订单才能退款");
         }
         List<OrderrefundTradeVo> list = this.list(Wrappers.<OrderrefundTradeVo>lambdaQuery().eq(OrderrefundTradeVo::getOrderNo, order.getOrderNo()));
-        if (CollectionUtils.isEmpty(list)) {
-            BigDecimal sumRefundCount = list.stream().map(OrderrefundTradeVo::getRefundAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
-            if ((refundAmount.add(sumRefundCount)).compareTo(order.getPayAmount()) > 0) {
-                throw new BusinessException("退款金额不能超过订单金额");
-            }
-        }else{
-            if (refundAmount.compareTo(order.getPayAmount()) > 0) {
-                throw new BusinessException("退款金额不能超过订单金额");
-            }
+        BigDecimal sumRefundCount = CollectionUtils.isEmpty(list) ? BigDecimal.ZERO
+                : list.stream().map(OrderrefundTradeVo::getRefundAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (refundAmount.add(sumRefundCount).compareTo(order.getPayAmount()) > 0) {
+            throw new BusinessException("退款金额不能超过订单金额");
         }
         // TODO: 可以添加检查是否已有退款记录，避免重复退款
     }
@@ -149,13 +149,26 @@ public class OrderRefundServiceImpl extends ServiceImpl<OrderRefundTradeMapper, 
     }
 
     private void deductFromAccount(OrderRefundTradeDto dto, OrderTradeVo originalOrder, String refundNo) throws Exception {
-        // 构建账户下账请求
+        Result<List<MerchantAccountBindVo>> bindResult = merchantFeginClient.listByMerchant(
+                dto.getMerchantNo(), BusiEnum.CASH.getCode());
+        if (bindResult == null || CollectionUtils.isEmpty(bindResult.getData())) {
+            throw new BusinessException("没有查询到商户绑定的账户信息");
+        }
+        MerchantAccountBindVo bind = bindResult.getData().get(0);
+        LocalDateTime now = LocalDateTime.now();
         AccountUpDownDto accountDownDto = new AccountUpDownDto();
+        accountDownDto.setFlowNo(refundNo);
+        accountDownDto.setAccountNo(bind.getAccountNo().trim());
+        accountDownDto.setAccountType(bind.getAccountType());
         accountDownDto.setMerchantNo(dto.getMerchantNo());
-        accountDownDto.setAmount(dto.getRefundAmount().toString());
-        accountDownDto.setBizOrderNo(refundNo);
+        accountDownDto.setChannelCode(originalOrder.getPayChannel());
         accountDownDto.setBizType(BusiEnum.BIZ_TYPE_REFUND.getCode());
-        // 调用账户下账接口
+        accountDownDto.setBizOrderNo(refundNo);
+        accountDownDto.setBizOrderDate(now.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+        accountDownDto.setBizOrderTime(now.format(DateTimeFormatter.ofPattern("HHmmss")));
+        accountDownDto.setAmount(dto.getRefundAmount().toPlainString());
+        accountDownDto.setFunCode(BusiEnum.FUNCODE_DOWNWAY.getCode());
+        accountDownDto.setRemark(dto.getReason());
         Result<com.al.bean.vo.account.AccountUpDownVo> result = accountFeginClient.downway(accountDownDto);
 
         if (result == null || !String.valueOf(ResultEnum.SUCESS.getCode()).equals(result.getCode())) {

@@ -46,7 +46,7 @@ public class MerchantRateServiceImpl implements MerchantRateService {
         try {
             log.info("query all merchant rate start:{} ", merchantFeeDto);
             if (StringUtil.isBlank(merchantFeeDto.getMerchantNo())) {
-                throw new RuntimeException("商户号不能为空!");
+                throw new BusinessException("商户号不能为空");
             }
             List<MerchantFeeVo> merchantFeeVos = merchantFeeMapper.selectList(Wrappers.lambdaQuery(MerchantFeeVo.class)
                     .eq(merchantFeeDto.getId() != null, MerchantFeeVo::getId, merchantFeeDto.getId())
