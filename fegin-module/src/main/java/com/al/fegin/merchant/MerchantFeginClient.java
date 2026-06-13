@@ -45,5 +45,8 @@ public interface MerchantFeginClient {
     Result<List<MerchantAccountBindVo>> listByMerchant(@RequestParam("merchantNo") String merchantNo,
                                                        @RequestParam(value = "acctType", required = false) String acctType) throws Exception;
     @PostMapping("/channel/list")
-    public Result<List<MerchantChannelConfigVo>> listConfig( @RequestBody  MerchantChannelConfigDto merchantChannelConfigDto) throws Exception;
+    Result<List<MerchantChannelConfigVo>> listConfig(@RequestBody MerchantChannelConfigDto merchantChannelConfigDto) throws Exception;
+
+    @GetMapping("/settle/listActive")
+    Result<List<MerchantSettleConfigVo>> listActiveSettleConfigs() throws Exception;
 }

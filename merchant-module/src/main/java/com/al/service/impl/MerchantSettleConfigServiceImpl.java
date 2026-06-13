@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -112,5 +113,11 @@ public class MerchantSettleConfigServiceImpl extends ServiceImpl<MerchantSettleC
             log.error("discard error:{}",e.getMessage());
             throw e;
         }
+    }
+
+    @Override
+    public List<MerchantSettleConfigVo> listActiveConfigs() {
+        return merchantSettleConfigMapper.selectList(Wrappers.lambdaQuery(MerchantSettleConfigVo.class)
+                .eq(MerchantSettleConfigVo::getStatus, 1));
     }
 }

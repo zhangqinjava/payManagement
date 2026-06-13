@@ -6,6 +6,8 @@ import com.al.service.MerchantSettleConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/settle")
 public class MerchantSettleConfigController {
@@ -22,6 +24,11 @@ public class MerchantSettleConfigController {
     @GetMapping("/update")
     public Result update(@RequestParam String merchantNo, @RequestParam String busiType ) {
         return Result.success(merchantSettleConfigService.discard(merchantNo,busiType));
+    }
+
+    @GetMapping("/listActive")
+    public Result listActive() {
+        return Result.success(merchantSettleConfigService.listActiveConfigs());
     }
 
 }

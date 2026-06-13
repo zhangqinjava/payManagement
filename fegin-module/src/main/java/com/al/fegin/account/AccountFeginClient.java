@@ -71,4 +71,7 @@ public interface AccountFeginClient {
 
     @PostMapping("/operation/batch/up")
     Result<BatchUpResultVo> batchUp(@RequestBody BatchUpDto dto);
+
+    @PostMapping("/admin/reconcile/daily")
+    Result<List<ReconcileDailyVo>> reconcileDaily(@RequestBody ReconcileDailyDto dto);
 }
