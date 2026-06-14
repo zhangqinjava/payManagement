@@ -1,8 +1,8 @@
 package com.al.split.service.impl;
 
-import com.al.bean.dto.billing.BillingCalculateDto;
+import com.al.bean.dto.billing.BillingSplitCalculateDto;
 import com.al.bean.vo.OrderTradeVo;
-import com.al.bean.vo.billing.BillingCalculateVo;
+import com.al.bean.vo.billing.BillingSplitCalculateVo;
 import com.al.bean.vo.merchant.MerchantAccountBindVo;
 import com.al.common.Result;
 import com.al.common.ResultEnum;
@@ -31,7 +31,6 @@ import java.util.List;
 public class SplitRuleServiceImpl implements SplitRuleService {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
-    private static final String DEFAULT_FEE_MODE = "1";
 
     @Autowired
     private BillingFeginClient billingFeginClient;
@@ -40,20 +39,20 @@ public class SplitRuleServiceImpl implements SplitRuleService {
 
     @Override
     public BigDecimal calculateFee(OrderTradeVo order) throws Exception {
-        BillingCalculateDto dto = new BillingCalculateDto();
+        BillingSplitCalculateDto dto = new BillingSplitCalculateDto();
         dto.setMerchantNo(order.getMerchantNo());
         dto.setBizType(order.getBizType());
-        dto.setFeeMode(DEFAULT_FEE_MODE);
+        dto.setOrderNo(order.getOrderNo());
         dto.setCalculateDate(LocalDate.now().format(DATE_FMT));
         dto.setAmount(order.getPayAmount());
         try {
-            Result<BillingCalculateVo> result = billingFeginClient.calculate(dto);
+            Result<BillingSplitCalculateVo> result = billingFeginClient.calculateForSplit(dto);
             if (result != null && result.getCode() == ResultEnum.SUCESS.getCode()
                     && result.getData() != null && result.getData().getFeeAmount() != null) {
                 return result.getData().getFeeAmount();
             }
         } catch (Exception e) {
-            log.warn("计费失败，按零手续费处理 orderNo={}", order.getOrderNo(), e);
+            log.warn("清分计费失败，按零手续费处理 orderNo={}", order.getOrderNo(), e);
         }
         return BigDecimal.ZERO;
     }

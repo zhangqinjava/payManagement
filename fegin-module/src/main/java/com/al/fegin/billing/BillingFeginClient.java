@@ -3,9 +3,11 @@ package com.al.fegin.billing;
 import com.al.bean.dto.billing.BillingCalculateDto;
 import com.al.bean.dto.billing.BillingOnboardOpenDto;
 import com.al.bean.dto.billing.BillingRuleQueryDto;
+import com.al.bean.dto.billing.BillingSplitCalculateDto;
 import com.al.bean.vo.billing.BillingCalculateVo;
 import com.al.bean.vo.billing.BillingMerchantRuleVo;
 import com.al.bean.vo.billing.BillingOnboardOpenVo;
+import com.al.bean.vo.billing.BillingSplitCalculateVo;
 import com.al.common.Result;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,4 +26,7 @@ public interface BillingFeginClient {
 
     @PostMapping("/rule/calculate")
     Result<BillingCalculateVo> calculate(@RequestBody BillingCalculateDto dto);
+
+    @PostMapping("/rule/calculate/split")
+    Result<BillingSplitCalculateVo> calculateForSplit(@RequestBody BillingSplitCalculateDto dto);
 }

@@ -3,6 +3,7 @@ package com.al.billing.controller;
 import com.al.billing.bean.dto.BillingCalculateDto;
 import com.al.billing.bean.dto.BillingOnboardOpenDto;
 import com.al.billing.bean.dto.BillingRuleQueryDto;
+import com.al.billing.bean.dto.BillingSplitCalculateDto;
 import com.al.billing.service.BillingRuleService;
 import com.al.common.result.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,5 +31,10 @@ public class BillingRuleController {
     @PostMapping("/calculate")
     public Result calculate(@Valid @RequestBody BillingCalculateDto dto) {
         return Result.success(billingRuleService.calculate(dto));
+    }
+
+    @PostMapping("/calculate/split")
+    public Result calculateForSplit(@Valid @RequestBody BillingSplitCalculateDto dto) {
+        return Result.success(billingRuleService.calculateForSplit(dto));
     }
 }
