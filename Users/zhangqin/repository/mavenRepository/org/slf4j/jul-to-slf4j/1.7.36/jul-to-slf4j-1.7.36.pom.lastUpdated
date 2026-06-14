@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:04:17 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781348657854
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781348657684
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.slf4j\:jul-to-slf4j\:pom\:1.7.36 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/slf4j/jul-to-slf4j/1.7.36/jul-to-slf4j-1.7.36.pom 502 Bad Gateway

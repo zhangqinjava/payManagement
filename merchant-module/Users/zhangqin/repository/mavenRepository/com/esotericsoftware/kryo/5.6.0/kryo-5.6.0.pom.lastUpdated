@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:34:05 CST 2026
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350445388
+@default-central-https\://repo.maven.apache.org/maven2/.lastUpdated=1781350445654
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact com.esotericsoftware\:kryo\:pom\:5.6.0 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/com/esotericsoftware/kryo/5.6.0/kryo-5.6.0.pom 502 Bad Gateway
+https\://repo.maven.apache.org/maven2/.error=Could not transfer artifact com.esotericsoftware\:kryo\:pom\:5.6.0 from/to central (https\://repo.maven.apache.org/maven2)\: GET request of\: com/esotericsoftware/kryo/5.6.0/kryo-5.6.0.pom from central failed

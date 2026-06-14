@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:37:31 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350651231
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350651063
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.hdrhistogram\:HdrHistogram\:pom\:2.1.12 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.pom 502 Bad Gateway

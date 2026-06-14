@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:18:46 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781353126945
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781353126804
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.glassfish.jersey\:jersey-bom\:pom\:2.27 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/glassfish/jersey/jersey-bom/2.27/jersey-bom-2.27.pom 502 Bad Gateway

@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:22:28 CST 2026
+zipkin-reporter-metrics-micrometer-2.16.3.pom>nexus-aliyun=
+zipkin-reporter-metrics-micrometer-2.16.3.jar>central=
+zipkin-reporter-metrics-micrometer-2.16.3.jar>nexus-aliyun=
+zipkin-reporter-metrics-micrometer-2.16.3.pom>central=

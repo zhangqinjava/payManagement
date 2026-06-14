@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:02:47 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781348567252
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781348567095
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.micrometer\:micrometer-bom\:pom\:1.9.7 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/micrometer/micrometer-bom/1.9.7/micrometer-bom-1.9.7.pom 502 Bad Gateway

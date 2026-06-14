@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:36:57 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350617790
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350616126
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact com.zaxxer\:HikariCP\:jar\:4.0.3 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/com/zaxxer/HikariCP/4.0.3/HikariCP-4.0.3.jar 502 Bad Gateway

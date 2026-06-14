@@ -1,0 +1,12 @@
+server:
+  port: 8086
+  servlet:
+    context-path: /billing/
+spring:
+  application:
+    name: billing-module
+  profiles:
+    active: dev
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true

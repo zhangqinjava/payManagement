@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:34:31 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350471908
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350471739
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.netty\:netty-bom\:pom\:4.1.97.Final from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/netty/netty-bom/4.1.97.Final/netty-bom-4.1.97.Final.pom 502 Bad Gateway

@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:26:00 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781353560587
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781353560435
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact commons-beanutils\:commons-beanutils\:pom\:1.9.4 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/commons-beanutils/commons-beanutils/1.9.4/commons-beanutils-1.9.4.pom 502 Bad Gateway

@@ -3,6 +3,22 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/account-module/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/account-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/billing-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/billing-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/common-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/common-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/fegin-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/fegin-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gateway-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/gateway-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/merchant-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/merchant-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/order-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/order-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/settle-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/settle-module/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>

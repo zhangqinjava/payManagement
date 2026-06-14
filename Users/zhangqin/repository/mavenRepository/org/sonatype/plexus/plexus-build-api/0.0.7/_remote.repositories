@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:16:09 CST 2026
+plexus-build-api-0.0.7.jar>nexus-aliyun=
+plexus-build-api-0.0.7.jar>central=
+plexus-build-api-0.0.7.pom>nexus-aliyun=
+plexus-build-api-0.0.7.pom>central=

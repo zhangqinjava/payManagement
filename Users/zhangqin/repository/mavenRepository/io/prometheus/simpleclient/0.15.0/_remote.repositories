@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:22:28 CST 2026
+simpleclient-0.15.0.pom>central=
+simpleclient-0.15.0.pom>nexus-aliyun=
+simpleclient-0.15.0.jar>nexus-aliyun=
+simpleclient-0.15.0.jar>central=

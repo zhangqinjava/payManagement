@@ -1,10 +1,10 @@
 package com.al.service.impl;
 
 import com.al.bean.vo.MerchantTerminalBindVo;
-import com.al.service.MerchantTerminalBindService;
-
+import com.al.common.exception.BusinessException;
 import com.al.mapper.MerchantTerminalBindMapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.al.service.MerchantTerminalBindService;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +13,9 @@ import java.util.List;
 
 @Service
 public class MerchantTerminalBindServiceImpl implements MerchantTerminalBindService {
+
+    private static final int STATUS_ACTIVE = 1;
+    private static final int STATUS_INACTIVE = 0;
 
     private final MerchantTerminalBindMapper mapper;
 
@@ -23,51 +26,50 @@ public class MerchantTerminalBindServiceImpl implements MerchantTerminalBindServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void bindTerminal(MerchantTerminalBindVo bind) throws Exception {
-        // 校验是否已存在绑定
-        QueryWrapper<MerchantTerminalBindVo> query = new QueryWrapper<>();
-        query.eq("merchant_no", bind.getMerchantNo())
-                .eq("terminal_no", bind.getTerminalNo())
-                .eq("status", 1);
-        MerchantTerminalBindVo existing = mapper.selectOne(query);
+        MerchantTerminalBindVo existing = findActiveBind(bind.getMerchantNo(), bind.getTerminalNo());
         if (existing != null) {
-            throw new Exception("终端已绑定该商户");
+            throw new BusinessException("终端已绑定该商户");
         }
-        bind.setStatus(1);
-        bind.setBindTime(LocalDateTime.now());
-        bind.setCreateTime(LocalDateTime.now());
-        bind.setUpdateTime(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        bind.setStatus(STATUS_ACTIVE);
+        bind.setBindTime(now);
+        bind.setCreateTime(now);
+        bind.setUpdateTime(now);
         mapper.insert(bind);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void unbindTerminal(String merchantNo, String terminalNo, String updateUser) {
-        QueryWrapper<MerchantTerminalBindVo> query = new QueryWrapper<>();
-        query.eq("merchant_no", merchantNo)
-                .eq("terminal_no", terminalNo)
-                .eq("status", 1);
-
-        MerchantTerminalBindVo bind = mapper.selectOne(query);
-        if (bind != null) {
-            bind.setStatus(0);
-            bind.setUnbindTime(LocalDateTime.now());
-            bind.setUpdateTime(LocalDateTime.now());
-            bind.setUpdateUser(updateUser);
-            mapper.updateById(bind);
+        MerchantTerminalBindVo bind = findActiveBind(merchantNo, terminalNo);
+        if (bind == null) {
+            return;
         }
+        bind.setStatus(STATUS_INACTIVE);
+        bind.setUnbindTime(LocalDateTime.now());
+        bind.setUpdateTime(LocalDateTime.now());
+        bind.setUpdateUser(updateUser);
+        mapper.updateById(bind);
     }
 
     @Override
     public List<MerchantTerminalBindVo> getTerminalsByMerchant(String merchantNo) {
-        return mapper.selectList(new QueryWrapper<MerchantTerminalBindVo>()
-                .eq("merchant_no", merchantNo)
-                .eq("status", 1));
+        return mapper.selectList(Wrappers.lambdaQuery(MerchantTerminalBindVo.class)
+                .eq(MerchantTerminalBindVo::getMerchantNo, merchantNo)
+                .eq(MerchantTerminalBindVo::getStatus, STATUS_ACTIVE));
     }
 
     @Override
     public MerchantTerminalBindVo getMerchantByTerminal(String terminalNo) {
-        return mapper.selectOne(new QueryWrapper<MerchantTerminalBindVo>()
-                .eq("terminal_no", terminalNo)
-                .eq("status", 1));
+        return mapper.selectOne(Wrappers.lambdaQuery(MerchantTerminalBindVo.class)
+                .eq(MerchantTerminalBindVo::getTerminalNo, terminalNo)
+                .eq(MerchantTerminalBindVo::getStatus, STATUS_ACTIVE));
+    }
+
+    private MerchantTerminalBindVo findActiveBind(String merchantNo, String terminalNo) {
+        return mapper.selectOne(Wrappers.lambdaQuery(MerchantTerminalBindVo.class)
+                .eq(MerchantTerminalBindVo::getMerchantNo, merchantNo)
+                .eq(MerchantTerminalBindVo::getTerminalNo, terminalNo)
+                .eq(MerchantTerminalBindVo::getStatus, STATUS_ACTIVE));
     }
 }

@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:03:41 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781348621478
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781348621287
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact ch.qos.logback\:logback-parent\:pom\:1.2.11 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/ch/qos/logback/logback-parent/1.2.11/logback-parent-1.2.11.pom 502 Bad Gateway

@@ -17,95 +17,73 @@ public class AccountBanlanceController {
     @Autowired
     private AccountBanlanceService accountBanlanceService;
 
-    /**
-     * 上涨
-     * @param accountUpDownDto
-     * @return
-     * @throws Exception
-     */
     @PostMapping("/up")
     public Result up(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
         return Result.success(accountBanlanceService.up(accountUpDownDto));
     }
 
-    /**
-     * 下账
-     * @param accountUpDownDto
-     * @return
-     * @throws Exception
-     */
     @PostMapping("/down")
     public Result down(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
         return Result.success(accountBanlanceService.down(accountUpDownDto));
     }
 
-    /**
-     * 将余额下账，然后上账到在途
-     * @param accountUpDownDto
-     * @return
-     * @throws Exception
-     */
     @PostMapping("/downway")
     public Result downway(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
         return Result.success(accountBanlanceService.downWay(accountUpDownDto));
     }
 
-    /**
-     * 在途账户下账
-     * @param accountUpDownDto
-     * @return
-     * @throws Exception
-     */
     @PostMapping("/transitdown")
     public Result transitDown(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
         return Result.success(accountBanlanceService.transitDown(accountUpDownDto));
     }
-    /**
-     * 在途账户上涨到总账户
-     * @param accountUpDownDto
-     * @return
-     * @throws Exception
-     */
+
     @PostMapping("/transitup")
     public Result transitUp(@RequestBody @Valid AccountUpDownDto accountUpDownDto) throws Exception {
         return Result.success(accountBanlanceService.transitUp(accountUpDownDto));
     }
 
-    /**
-     * 转账
-     * @param accountTransferDto
-     * @return
-     * @throws Exception
-     */
     @PostMapping("/transfer")
     public Result transfer(@RequestBody @Valid AccountTransferDto accountTransferDto) throws Exception {
         return Result.success(accountBanlanceService.transfer(accountTransferDto));
     }
 
-    /**
-     * 账户冻结
-     * @param accountFreezeDto
-     * @return
-     * @throws Exception
-     */
     @PostMapping("/freeze")
     public Result freeze(@RequestBody @Valid AccountFreezeDto accountFreezeDto) throws Exception {
         return Result.success(accountBanlanceService.freeze(accountFreezeDto));
     }
 
-    /**
-     * 解冻
-     * @param accountFreezeDto
-     * @return
-     * @throws Exception
-     */
     @PostMapping("/unfreeze")
     public Result unfreeze(@RequestBody @Valid AccountFreezeDto accountFreezeDto) throws Exception {
         return Result.success(accountBanlanceService.unfreeze(accountFreezeDto));
     }
+
     @PostMapping("/query/detail")
-    public Result query(@RequestBody @Valid AccountQueryDto accountDto) throws Exception {
-        return Result.success(null);
+    public Result queryDetail(@RequestBody @Valid AccountQueryDto accountDto) throws Exception {
+        return Result.success(accountBanlanceService.query(accountDto));
     }
 
+    @PostMapping("/query/flow")
+    public Result queryFlow(@RequestBody @Valid AccountFlowQueryDto dto) throws Exception {
+        return Result.success(accountBanlanceService.queryFlow(dto));
+    }
+
+    @PostMapping("/query/summary")
+    public Result querySummary(@RequestBody @Valid QuerySummaryDto dto) throws Exception {
+        return Result.success(accountBanlanceService.querySummary(dto));
+    }
+
+    @PostMapping("/settle/clear")
+    public Result settleClear(@RequestBody @Valid SettleClearDto dto) throws Exception {
+        return Result.success(accountBanlanceService.settleClear(dto));
+    }
+
+    @PostMapping("/settle/payout")
+    public Result settlePayout(@RequestBody @Valid SettlePayoutDto dto) throws Exception {
+        return Result.success(accountBanlanceService.settlePayout(dto));
+    }
+
+    @PostMapping("/batch/up")
+    public Result batchUp(@RequestBody @Valid BatchUpDto dto) throws Exception {
+        return Result.success(accountBanlanceService.batchUp(dto));
+    }
 }

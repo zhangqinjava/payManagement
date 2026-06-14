@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:27:52 CST 2026
+rocketmq-remoting-4.9.3.jar>nexus-aliyun=
+rocketmq-remoting-4.9.3.jar>central=
+rocketmq-remoting-4.9.3.pom>central=
+rocketmq-remoting-4.9.3.pom>nexus-aliyun=

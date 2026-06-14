@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:56:34 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781351794408
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781351794240
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact mysql\:mysql-connector-java\:pom\:8.0.33 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/mysql/mysql-connector-java/8.0.33/mysql-connector-java-8.0.33.pom 502 Bad Gateway

@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:36:57 CST 2026
+spring-cloud-commons-3.1.4.jar>central=
+spring-cloud-commons-3.1.4.pom>nexus-aliyun=
+spring-cloud-commons-3.1.4.jar>nexus-aliyun=
+spring-cloud-commons-3.1.4.pom>central=

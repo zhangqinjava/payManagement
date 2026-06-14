@@ -10,7 +10,7 @@ public interface MerchantRateService {
     List<MerchantFeeVo> query(MerchantFeeDto merchantFeeDto)throws Exception;
     MerchantFeeVo save(MerchantFeeDto merchantFeeDto) throws Exception;
     String update(MerchantFeeDto merchantFeeDto) throws Exception;
-    String delete(String merchantId) throws Exception;
+    String delete(MerchantFeeDto merchantFeeDto) throws Exception;
     public MerchantFeeVo selectOne(CaculateDto caculateDto) throws Exception;
 
 

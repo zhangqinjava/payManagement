@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:30:17 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350217123
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350216833
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.eclipse.ee4j\:project\:pom\:1.0.8 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/eclipse/ee4j/project/1.0.8/project-1.0.8.pom 502 Bad Gateway

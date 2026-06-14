@@ -1,16 +1,16 @@
 package com.al.service.listener;
 
 import com.al.bean.dto.account.AccountUpDownDto;
-import com.al.bean.dto.merchant.MerchantFeeDto;
 import com.al.bean.vo.OrderTradeVo;
 import com.al.bean.vo.account.AccountUpDownVo;
 import com.al.bean.vo.merchant.MerchantAccountBindVo;
-import com.al.bean.vo.merchant.MerchantFeeVo;
 import com.al.common.Result;
 import com.al.common.ResultEnum;
 import com.al.common.business.AccountTradeEnum;
 import com.al.common.business.BusiEnum;
+import com.al.common.business.TopicEnum;
 import com.al.common.exception.BusinessException;
+import com.al.config.RocketMQUtil;
 import com.al.fegin.account.AccountFeginClient;
 import com.al.fegin.merchant.MerchantFeginClient;
 import com.al.mapper.OrderTradeMapper;
@@ -20,16 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.sql.Wrapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @Slf4j
 @Component
@@ -39,90 +33,82 @@ import java.util.concurrent.ThreadPoolExecutor;
         consumerGroup = "order_pay_group"
 )
 public class OrderUpListener implements RocketMQListener<OrderTradeVo> {
+
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HHmmss");
+
     @Autowired
     private AccountFeginClient accountFeginClient;
     @Autowired
     private MerchantFeginClient merchantFeginClient;
     @Autowired
     private OrderTradeMapper orderTradeMapper;
-    @Resource(name = "asyncThreadConfig")
-    private ThreadPoolExecutor threadPoolExecutor;
+    @Autowired
+    private RocketMQUtil rocketMQUtil;
+
     @Override
-    public void onMessage(OrderTradeVo orderTradeVo) {
-        log.info("start execute consumer :{}",orderTradeVo);
+    public void onMessage(OrderTradeVo message) {
+        log.info("start execute account up consumer:{}", message);
         try {
             OrderTradeVo order = orderTradeMapper.selectOne(Wrappers.lambdaQuery(OrderTradeVo.class)
-                    .eq(OrderTradeVo::getOrderNo, orderTradeVo.getOrderNo()));
+                    .eq(OrderTradeVo::getOrderNo, message.getOrderNo())
+                    .eq(OrderTradeVo::getMerchantNo, message.getMerchantNo()));
             if (order == null) {
-                log.error("order not exist:{}", orderTradeVo.getOrderNo());
+                log.error("order not exist:{}", message.getOrderNo());
                 return;
             }
-            // 幂等判断
-            if(order.getAccountStatus() == AccountTradeEnum.SUCESS.getCode()){
-                log.info("account already success skip:{}", orderTradeVo.getOrderNo());
+            if (AccountTradeEnum.SUCESS.getCode().equals(order.getAccountStatus())) {
+                log.info("account already success skip:{}", message.getOrderNo());
                 return;
             }
-            Result<List<MerchantAccountBindVo>> listResult = merchantFeginClient.listByMerchant(orderTradeVo.getMerchantNo(), BusiEnum.CASH.getCode());
-            log.info("merchant account bind result:{}",listResult);
-            if (CollectionUtils.isEmpty(listResult.getData())) {
-                throw new BusinessException("没有查询到商户绑定的账户信息");
-            }
-            MerchantAccountBindVo merchantAccountBindVo = listResult.getData().get(0);
-            AccountUpDownDto account=new AccountUpDownDto();
-            account.setAccountNo(merchantAccountBindVo.getAccountNo().trim());
-            account.setAccountType(merchantAccountBindVo.getAccountType());
-            account.setMerchantNo(orderTradeVo.getMerchantNo());
-            account.setAmount(orderTradeVo.getPayAmount().toString());
-            account.setBizOrderDate(orderTradeVo.getOrderDate().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
-            account.setBizOrderTime(orderTradeVo.getOrderDate().format(DateTimeFormatter.ofPattern("HHmmss")));
-            account.setBizOrderNo(orderTradeVo.getOrderNo());
-            account.setBizType(orderTradeVo.getBizType());
-            account.setChannelCode(orderTradeVo.getPayChannel());
-            account.setFlowNo(orderTradeVo.getAccountFlow());
-            account.setFunCode(BusiEnum.FUNCODE_UP.getCode());
-            Result<AccountUpDownVo> up = accountFeginClient.up(account);
-            log.info("request account response:{}",up);
-            if (up.getCode() == ResultEnum.SUCESS.getCode()) {
-                OrderTradeVo build = OrderTradeVo.builder()
-                        .accountStatus(AccountTradeEnum.SUCESS.getCode())
-                        .accountTime(LocalDateTime.now())
-                        .build();
-                orderTradeMapper.update(build, Wrappers.lambdaUpdate(OrderTradeVo.class)
-                        .eq(OrderTradeVo::getOrderNo, orderTradeVo.getOrderNo())
-                        .eq(OrderTradeVo::getMerchantNo, orderTradeVo.getMerchantNo()));
-                log.info("current consumer update account success status complte:{}",orderTradeVo);
-            }else{
-                OrderTradeVo build = OrderTradeVo.builder().accountStatus(AccountTradeEnum.FAIL.getCode()).build();
-                orderTradeMapper.update(build, Wrappers.lambdaUpdate(OrderTradeVo.class)
-                        .eq(OrderTradeVo::getOrderNo, orderTradeVo.getOrderNo()));
-                log.info("current consumer update account fail status complte:{}",orderTradeVo);
-            }
+            AccountUpDownDto upDto = buildUpDto(order);
+            Result<AccountUpDownVo> upResult = accountFeginClient.up(upDto);
+            log.info("request account response:{}", upResult);
+            updateAccountStatus(order, upResult);
         } catch (Exception e) {
-            log.error("consumer executer message failed:{}",e.getMessage());
-            throw new RuntimeException(e);
+            log.error("consumer execute message failed:{}", e.getMessage(), e);
+            throw new BusinessException("订单上账消费失败: " + e.getMessage());
         }
     }
-    public void caculateFee(OrderTradeVo order) throws Exception {
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                MerchantFeeDto dto = new MerchantFeeDto();
-                dto.setBizType(order.getBizType());
-                dto.setMerchantNo(order.getMerchantNo());
-                dto.setEffectiveTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
-                dto.setStatus(Integer.valueOf(BusiEnum.RATE_NOT_DISABLED.getCode()));
-                Result<List<MerchantFeeVo>> feeList = null;
-                feeList = merchantFeginClient.queryFee(dto);
-                if (CollectionUtils.isEmpty(feeList.getData())) {
-                    return null;
-                }
-                log.info("current consumer :{} select merchantno :{]fee rate  :{]",order.getOrderNo(),order.getMerchantNo(),feeList.getData().get(0));
-                return feeList.getData().get(0);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        },threadPoolExecutor).thenApply(result->{
-            return null;
-        });
 
+    private AccountUpDownDto buildUpDto(OrderTradeVo order) throws Exception {
+        Result<java.util.List<MerchantAccountBindVo>> listResult = merchantFeginClient.listByMerchant(
+                order.getMerchantNo(), BusiEnum.CASH.getCode());
+        if (listResult == null || listResult.getCode() != ResultEnum.SUCESS.getCode()
+                || CollectionUtils.isEmpty(listResult.getData())) {
+            throw new BusinessException("没有查询到商户绑定的账户信息");
+        }
+        MerchantAccountBindVo bind = listResult.getData().get(0);
+        LocalDateTime orderTime = order.getOrderDate() != null ? order.getOrderDate() : LocalDateTime.now();
+        AccountUpDownDto account = new AccountUpDownDto();
+        account.setAccountNo(bind.getAccountNo().trim());
+        account.setAccountType(bind.getAccountType());
+        account.setMerchantNo(order.getMerchantNo());
+        account.setAmount(order.getPayAmount().toPlainString());
+        account.setBizOrderDate(orderTime.format(DATE_FMT));
+        account.setBizOrderTime(orderTime.format(TIME_FMT));
+        account.setBizOrderNo(order.getOrderNo());
+        account.setBizType(order.getBizType());
+        account.setChannelCode(order.getPayChannel());
+        account.setFlowNo(order.getAccountFlow());
+        account.setFunCode(BusiEnum.FUNCODE_UP.getCode());
+        return account;
+    }
+
+    private void updateAccountStatus(OrderTradeVo order, Result<AccountUpDownVo> upResult) {
+        boolean success = upResult != null && upResult.getCode() == ResultEnum.SUCESS.getCode();
+        OrderTradeVo update = OrderTradeVo.builder()
+                .accountStatus(success ? AccountTradeEnum.SUCESS.getCode() : AccountTradeEnum.FAIL.getCode())
+                .accountTime(LocalDateTime.now())
+                .updateTime(LocalDateTime.now())
+                .build();
+        orderTradeMapper.update(update, Wrappers.lambdaUpdate(OrderTradeVo.class)
+                .eq(OrderTradeVo::getOrderNo, order.getOrderNo())
+                .eq(OrderTradeVo::getMerchantNo, order.getMerchantNo()));
+        log.info("order account status updated, orderNo={}, success={}", order.getOrderNo(), success);
+        if (success) {
+            rocketMQUtil.send(TopicEnum.ORDER_SPLIT.getTopic(), "*", order.getOrderNo(), order);
+            log.info("account up success, split message sent orderNo={}", order.getOrderNo());
+        }
     }
 }

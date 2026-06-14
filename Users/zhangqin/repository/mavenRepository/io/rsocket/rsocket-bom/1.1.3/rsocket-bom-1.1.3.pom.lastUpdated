@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 18:58:44 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781348324379
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781348324220
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.rsocket\:rsocket-bom\:pom\:1.1.3 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/rsocket/rsocket-bom/1.1.3/rsocket-bom-1.1.3.pom 502 Bad Gateway

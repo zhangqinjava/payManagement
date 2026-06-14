@@ -1,29 +1,47 @@
 package com.al.account.controller;
 
+import com.al.account.bean.dto.AccountFreezeRiskDto;
+import com.al.account.bean.dto.FreezeQueryDto;
+import com.al.account.service.accountService.AccountFreezeService;
 import com.al.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
-import java.util.concurrent.Executor;
+import javax.validation.Valid;
 
 @RestController
 @Slf4j
 @RequestMapping("/freeze")
-public class AccountFreezeController{
+public class AccountFreezeController {
 
-    @GetMapping("/risk")
-    public Result risk(){
-        return Result.success(null);
-    }
-    @GetMapping("/query")
-    public Result query(){
-        log.info("query freeze ");
-        return Result.success(null);
+    @Autowired
+    private AccountFreezeService accountFreezeService;
+
+    @PostMapping("/risk")
+    public Result risk(@RequestBody @Valid AccountFreezeRiskDto dto) throws Exception {
+        log.info("risk freeze request:{}", dto);
+        return Result.success(accountFreezeService.riskFreeze(dto));
     }
 
+    @PostMapping("/query")
+    public Result query(@RequestBody FreezeQueryDto dto) throws Exception {
+        log.info("query freeze list:{}", dto);
+        return Result.success(accountFreezeService.queryFreeze(dto));
+    }
+
+    @PostMapping("/query/detail")
+    public Result queryDetail(@RequestBody FreezeQueryDto dto) throws Exception {
+        log.info("query freeze detail:{}", dto);
+        return Result.success(accountFreezeService.queryFreezeDetail(dto));
+    }
+
+    @PostMapping("/unfreeze")
+    public Result unfreeze(@RequestBody @Valid AccountFreezeRiskDto dto) throws Exception {
+        log.info("risk unfreeze request:{}", dto);
+        return Result.success(accountFreezeService.riskUnfreeze(dto));
+    }
 }

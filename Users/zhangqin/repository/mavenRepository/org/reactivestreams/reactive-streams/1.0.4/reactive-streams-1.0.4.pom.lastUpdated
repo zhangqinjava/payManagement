@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:58:18 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781351898192
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781351898026
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.reactivestreams\:reactive-streams\:pom\:1.0.4 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4.pom 502 Bad Gateway

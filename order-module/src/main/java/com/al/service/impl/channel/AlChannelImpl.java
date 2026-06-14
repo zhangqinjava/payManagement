@@ -14,7 +14,12 @@ public class AlChannelImpl implements TradeChannel {
     }
 
     @Override
-    public Object pay(Map<String,Object> map) {
-        return null;
+    public Object pay(Map<String, Object> map) {
+        return "success";
+    }
+
+    @Override
+    public Object refund(Map<String, Object> refund) {
+        return "success";
     }
 }

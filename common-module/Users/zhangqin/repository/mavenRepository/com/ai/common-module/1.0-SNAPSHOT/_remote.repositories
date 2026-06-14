@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue Mar 10 17:34:12 CST 2026
+common-module-1.0-SNAPSHOT.jar>=
+common-module-1.0-SNAPSHOT.pom>=

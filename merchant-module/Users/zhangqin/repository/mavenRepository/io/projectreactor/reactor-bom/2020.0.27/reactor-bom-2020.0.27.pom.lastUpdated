@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:03:39 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781348619318
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781348619165
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.projectreactor\:reactor-bom\:pom\:2020.0.27 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/projectreactor/reactor-bom/2020.0.27/reactor-bom-2020.0.27.pom 502 Bad Gateway
