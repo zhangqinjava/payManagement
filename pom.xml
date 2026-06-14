@@ -16,6 +16,7 @@
         <module>gateway-module</module>
         <module>fegin-module</module>
         <module>settle-module</module>
+        <module>billing-module</module>
     </modules>
 
     <properties>

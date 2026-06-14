@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
-@EnableFeignClients
+@EnableFeignClients(basePackages = "com.al.fegin")
 @MapperScan({"com.al.mapper", "com.al.split.mapper"})
 public class OrderApplication {
     public static void main(String[] args) {
