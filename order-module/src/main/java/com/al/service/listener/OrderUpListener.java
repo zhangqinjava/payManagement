@@ -8,7 +8,9 @@ import com.al.common.Result;
 import com.al.common.ResultEnum;
 import com.al.common.business.AccountTradeEnum;
 import com.al.common.business.BusiEnum;
+import com.al.common.business.TopicEnum;
 import com.al.common.exception.BusinessException;
+import com.al.config.RocketMQUtil;
 import com.al.fegin.account.AccountFeginClient;
 import com.al.fegin.merchant.MerchantFeginClient;
 import com.al.mapper.OrderTradeMapper;
@@ -41,6 +43,8 @@ public class OrderUpListener implements RocketMQListener<OrderTradeVo> {
     private MerchantFeginClient merchantFeginClient;
     @Autowired
     private OrderTradeMapper orderTradeMapper;
+    @Autowired
+    private RocketMQUtil rocketMQUtil;
 
     @Override
     public void onMessage(OrderTradeVo message) {
@@ -102,5 +106,9 @@ public class OrderUpListener implements RocketMQListener<OrderTradeVo> {
                 .eq(OrderTradeVo::getOrderNo, order.getOrderNo())
                 .eq(OrderTradeVo::getMerchantNo, order.getMerchantNo()));
         log.info("order account status updated, orderNo={}, success={}", order.getOrderNo(), success);
+        if (success) {
+            rocketMQUtil.send(TopicEnum.ORDER_SPLIT.getTopic(), "*", order.getOrderNo(), order);
+            log.info("account up success, split message sent orderNo={}", order.getOrderNo());
+        }
     }
 }
