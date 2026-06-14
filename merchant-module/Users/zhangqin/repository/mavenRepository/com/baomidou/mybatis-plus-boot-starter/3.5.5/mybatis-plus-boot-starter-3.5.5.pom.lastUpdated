@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:23:42 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781349822890
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781349822559
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact com.baomidou\:mybatis-plus-boot-starter\:pom\:3.5.5 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/com/baomidou/mybatis-plus-boot-starter/3.5.5/mybatis-plus-boot-starter-3.5.5.pom 502 Bad Gateway

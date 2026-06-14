@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:31:38 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350298960
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350298772
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.github.openfeign.form\:feign-form-spring\:pom\:3.8.0 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/github/openfeign/form/feign-form-spring/3.8.0/feign-form-spring-3.8.0.pom 502 Bad Gateway

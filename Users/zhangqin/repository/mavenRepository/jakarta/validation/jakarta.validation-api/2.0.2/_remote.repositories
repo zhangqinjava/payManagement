@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:36:57 CST 2026
+jakarta.validation-api-2.0.2.pom>central=
+jakarta.validation-api-2.0.2.pom>nexus-aliyun=
+jakarta.validation-api-2.0.2.jar>nexus-aliyun=
+jakarta.validation-api-2.0.2.jar>central=

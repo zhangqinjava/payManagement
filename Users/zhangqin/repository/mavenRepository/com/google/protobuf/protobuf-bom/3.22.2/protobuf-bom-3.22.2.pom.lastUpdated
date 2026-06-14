@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:07:58 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781348878671
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781348878510
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact com.google.protobuf\:protobuf-bom\:pom\:3.22.2 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/com/google/protobuf/protobuf-bom/3.22.2/protobuf-bom-3.22.2.pom 502 Bad Gateway

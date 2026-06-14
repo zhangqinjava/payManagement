@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:28:34 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350114616
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350114244
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.redisson\:redisson-parent\:pom\:3.32.0 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/redisson/redisson-parent/3.32.0/redisson-parent-3.32.0.pom 502 Bad Gateway

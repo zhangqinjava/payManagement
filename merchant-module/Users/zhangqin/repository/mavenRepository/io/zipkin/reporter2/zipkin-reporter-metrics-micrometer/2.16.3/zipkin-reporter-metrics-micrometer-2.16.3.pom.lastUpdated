@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:23:37 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781349817540
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781349817199
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.zipkin.reporter2\:zipkin-reporter-metrics-micrometer\:pom\:2.16.3 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/zipkin/reporter2/zipkin-reporter-metrics-micrometer/2.16.3/zipkin-reporter-metrics-micrometer-2.16.3.pom 502 Bad Gateway

@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:18:10 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781353090265
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781353090122
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact com.fasterxml\:oss-parent\:pom\:34 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/com/fasterxml/oss-parent/34/oss-parent-34.pom 502 Bad Gateway

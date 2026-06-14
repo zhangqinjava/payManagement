@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:22:28 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781353348195
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781353342508
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.aspectj\:aspectjrt\:jar\:1.9.7 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/aspectj/aspectjrt/1.9.7/aspectjrt-1.9.7.jar 502 Bad Gateway

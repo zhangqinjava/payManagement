@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:13:01 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781349181819
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781349181660
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.sonatype.aether\:aether-spi\:pom\:1.7 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/sonatype/aether/aether-spi/1.7/aether-spi-1.7.pom 502 Bad Gateway

@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:16:09 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781349369035
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781349353432
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.apache.maven.shared\:maven-shared-utils\:jar\:3.0.0 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/apache/maven/shared/maven-shared-utils/3.0.0/maven-shared-utils-3.0.0.jar 502 Bad Gateway

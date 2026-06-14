@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:22:38 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781349758238
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781349757889
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.zipkin.brave\:brave-instrumentation-httpasyncclient\:pom\:5.13.9 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/zipkin/brave/brave-instrumentation-httpasyncclient/5.13.9/brave-instrumentation-httpasyncclient-5.13.9.pom 502 Bad Gateway

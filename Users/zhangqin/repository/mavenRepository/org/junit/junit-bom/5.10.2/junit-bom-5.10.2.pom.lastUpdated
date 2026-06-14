@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:12:53 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781352773192
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781352773017
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.junit\:junit-bom\:pom\:5.10.2 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/junit/junit-bom/5.10.2/junit-bom-5.10.2.pom 502 Bad Gateway

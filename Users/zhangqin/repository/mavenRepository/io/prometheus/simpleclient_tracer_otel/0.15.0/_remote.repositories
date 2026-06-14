@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:22:28 CST 2026
+simpleclient_tracer_otel-0.15.0.jar>nexus-aliyun=
+simpleclient_tracer_otel-0.15.0.jar>central=
+simpleclient_tracer_otel-0.15.0.pom>central=
+simpleclient_tracer_otel-0.15.0.pom>nexus-aliyun=

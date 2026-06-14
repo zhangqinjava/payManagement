@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:05:04 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781348704725
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781348704555
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact com.fasterxml.jackson\:jackson-bom\:pom\:2.13.4 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/com/fasterxml/jackson/jackson-bom/2.13.4/jackson-bom-2.13.4.pom 502 Bad Gateway

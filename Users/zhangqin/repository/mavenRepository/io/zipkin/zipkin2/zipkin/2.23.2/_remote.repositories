@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:22:28 CST 2026
+zipkin-2.23.2.jar>central=
+zipkin-2.23.2.pom>nexus-aliyun=
+zipkin-2.23.2.jar>nexus-aliyun=
+zipkin-2.23.2.pom>central=

@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:36:43 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350603400
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350602980
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.springframework.data\:spring-data-releasetrain\:pom\:Lovelace-SR20 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/springframework/data/spring-data-releasetrain/Lovelace-SR20/spring-data-releasetrain-Lovelace-SR20.pom 502 Bad Gateway

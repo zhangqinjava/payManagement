@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:06:08 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781348768186
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781348768006
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.projectlombok\:lombok\:pom\:1.18.24 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/projectlombok/lombok/1.18.24/lombok-1.18.24.pom 502 Bad Gateway

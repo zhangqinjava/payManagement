@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:31:44 CST 2026
+parent-3.8.0.pom>nexus-aliyun=
+parent-3.8.0.pom>central=

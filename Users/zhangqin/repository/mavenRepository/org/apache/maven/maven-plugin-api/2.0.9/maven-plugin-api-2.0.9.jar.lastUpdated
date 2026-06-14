@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:28:10 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350090570
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350089302
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.apache.maven\:maven-plugin-api\:jar\:2.0.9 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/apache/maven/maven-plugin-api/2.0.9/maven-plugin-api-2.0.9.jar 502 Bad Gateway

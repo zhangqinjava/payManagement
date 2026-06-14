@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:29:54 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350194644
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350194505
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.r2dbc\:r2dbc-bom\:pom\:Arabba-SR13 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/r2dbc/r2dbc-bom/Arabba-SR13/r2dbc-bom-Arabba-SR13.pom 502 Bad Gateway

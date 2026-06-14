@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:56:18 CST 2026
+aws-java-sdk-bom-1.11.846.pom>nexus-aliyun=
+aws-java-sdk-bom-1.11.846.pom>central=

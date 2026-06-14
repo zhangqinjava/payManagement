@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:17:58 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781349478329
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781349478015
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.springframework.integration\:spring-integration-bom\:pom\:5.5.14 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/springframework/integration/spring-integration-bom/5.5.14/spring-integration-bom-5.5.14.pom 502 Bad Gateway

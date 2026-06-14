@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:27:52 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781353672900
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781353653100
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact commons-digester\:commons-digester\:jar\:2.1 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/commons-digester/commons-digester/2.1/commons-digester-2.1.jar 502 Bad Gateway

@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:16:09 CST 2026
+sisu-guice-2.1.7-noaop.jar>central=
+sisu-guice-2.1.7-noaop.jar>nexus-aliyun=
+sisu-guice-2.1.7.pom>nexus-aliyun=
+sisu-guice-2.1.7.pom>central=

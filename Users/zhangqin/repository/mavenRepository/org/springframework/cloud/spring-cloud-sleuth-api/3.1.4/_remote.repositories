@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:22:28 CST 2026
+spring-cloud-sleuth-api-3.1.4.pom>nexus-aliyun=
+spring-cloud-sleuth-api-3.1.4.jar>nexus-aliyun=
+spring-cloud-sleuth-api-3.1.4.jar>central=
+spring-cloud-sleuth-api-3.1.4.pom>central=

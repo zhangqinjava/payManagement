@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:22:28 CST 2026
+aspectjrt-1.9.7.jar>central=
+aspectjrt-1.9.7.jar>nexus-aliyun=
+aspectjrt-1.9.7.pom>central=
+aspectjrt-1.9.7.pom>nexus-aliyun=

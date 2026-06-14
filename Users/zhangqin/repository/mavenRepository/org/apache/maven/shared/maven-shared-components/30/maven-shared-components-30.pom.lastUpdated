@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:13:17 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781349197753
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781349197286
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.apache.maven.shared\:maven-shared-components\:pom\:30 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/apache/maven/shared/maven-shared-components/30/maven-shared-components-30.pom 502 Bad Gateway

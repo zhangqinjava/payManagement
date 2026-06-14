@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:22:28 CST 2026
+cache-api-1.1.1.jar>central=
+cache-api-1.1.1.pom>nexus-aliyun=
+cache-api-1.1.1.pom>central=
+cache-api-1.1.1.jar>nexus-aliyun=

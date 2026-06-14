@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:27:52 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781353672892
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781353653094
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.netty\:netty-codec-http2\:jar\:4.1.87.Final from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/netty/netty-codec-http2/4.1.87.Final/netty-codec-http2-4.1.87.Final.jar 502 Bad Gateway

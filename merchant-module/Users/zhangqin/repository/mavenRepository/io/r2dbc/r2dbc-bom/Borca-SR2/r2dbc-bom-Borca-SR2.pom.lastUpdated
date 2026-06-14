@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:03:34 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781348614150
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781348613993
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.r2dbc\:r2dbc-bom\:pom\:Borca-SR2 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/r2dbc/r2dbc-bom/Borca-SR2/r2dbc-bom-Borca-SR2.pom 502 Bad Gateway

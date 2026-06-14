@@ -1,0 +1,6 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:22:28 CST 2026
+brave-instrumentation-kafka-clients-5.13.9.jar>central=
+brave-instrumentation-kafka-clients-5.13.9.pom>central=
+brave-instrumentation-kafka-clients-5.13.9.pom>nexus-aliyun=
+brave-instrumentation-kafka-clients-5.13.9.jar>nexus-aliyun=

@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:28:23 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781353703872
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781353703727
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.sonatype.plexus\:plexus-build-api\:pom\:0.0.4 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/sonatype/plexus/plexus-build-api/0.0.4/plexus-build-api-0.0.4.pom 502 Bad Gateway

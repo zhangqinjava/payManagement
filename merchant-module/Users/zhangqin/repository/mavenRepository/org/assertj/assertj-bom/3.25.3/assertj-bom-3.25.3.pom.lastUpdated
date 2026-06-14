@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 19:29:02 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781350142114
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781350141832
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.assertj\:assertj-bom\:pom\:3.25.3 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/assertj/assertj-bom/3.25.3/assertj-bom-3.25.3.pom 502 Bad Gateway

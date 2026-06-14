@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sat Jun 13 20:17:54 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781353074722
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781353074581
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.springframework.boot\:spring-boot-dependencies\:pom\:2.1.17.RELEASE from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/springframework/boot/spring-boot-dependencies/2.1.17.RELEASE/spring-boot-dependencies-2.1.17.RELEASE.pom 502 Bad Gateway
