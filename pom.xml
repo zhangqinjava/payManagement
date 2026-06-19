@@ -17,6 +17,7 @@
         <module>fegin-module</module>
         <module>settle-module</module>
         <module>billing-module</module>
+        <module>reconcile-module</module>
     </modules>
 
     <properties>
@@ -86,6 +87,11 @@
                 <groupId>org.apache.rocketmq</groupId>
                 <artifactId>rocketmq-spring-boot-starter</artifactId>
                 <version>${rocketmq-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy</artifactId>
+                <version>3.0.19</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
