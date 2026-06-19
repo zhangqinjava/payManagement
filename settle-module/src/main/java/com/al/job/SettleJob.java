@@ -32,20 +32,27 @@ import java.util.List;
 public class SettleJob {
 
     private static final DateTimeFormatter SETTLE_NO_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private static final DateTimeFormatter RECONCILE_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final SettleRecordService settleRecordService;
     private final SettleDetailService settleDetailService;
     private final AccountSettleDataService accountSettleDataService;
+    private final SettleReconcileService settleReconcileService;
+    private final SettleReconcileProperties settleReconcileProperties;
     private final MerchantFeginClient merchantFeginClient;
 
     @Autowired
     public SettleJob(SettleRecordService settleRecordService,
                      SettleDetailService settleDetailService,
                      AccountSettleDataService accountSettleDataService,
+                     SettleReconcileService settleReconcileService,
+                     SettleReconcileProperties settleReconcileProperties,
                      MerchantFeginClient merchantFeginClient) {
         this.settleRecordService = settleRecordService;
         this.settleDetailService = settleDetailService;
         this.accountSettleDataService = accountSettleDataService;
+        this.settleReconcileService = settleReconcileService;
+        this.settleReconcileProperties = settleReconcileProperties;
         this.merchantFeginClient = merchantFeginClient;
     }
 
@@ -126,6 +133,14 @@ public class SettleJob {
         if (settleRecordService.existsRecord(merchantNo, busiType, startDate, endDate)) {
             log.info("商户{}周期{}~{}结算记录已存在，跳过", merchantNo, startDate, endDate);
             return;
+        }
+
+        if (settleReconcileProperties.isEnabled() && settleReconcileProperties.isRequired()) {
+            String reconcileDate = endDate.format(RECONCILE_DATE);
+            if (!settleReconcileService.hasPassedReconcile(merchantNo, reconcileDate)) {
+                log.warn("商户{}在{}未完成对账或存在差异，跳过结算", merchantNo, reconcileDate);
+                return;
+            }
         }
 
         log.info("从账务侧抽取数据，商户号：{}，周期：{}~{}", merchantNo, startDate, endDate);

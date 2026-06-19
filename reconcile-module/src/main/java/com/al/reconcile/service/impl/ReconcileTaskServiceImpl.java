@@ -130,6 +130,7 @@ public class ReconcileTaskServiceImpl implements ReconcileTaskService {
                 .eq(StringUtils.isNotBlank(dto.getTaskNo()), ReconcileTaskVo::getTaskNo, dto.getTaskNo())
                 .eq(StringUtils.isNotBlank(dto.getReconcileDate()), ReconcileTaskVo::getReconcileDate, dto.getReconcileDate())
                 .eq(StringUtils.isNotBlank(dto.getChannelCode()), ReconcileTaskVo::getChannelCode, dto.getChannelCode())
+                .eq(StringUtils.isNotBlank(dto.getMerchantNo()), ReconcileTaskVo::getMerchantNo, dto.getMerchantNo())
                 .eq(dto.getStatus() != null, ReconcileTaskVo::getStatus, dto.getStatus())
                 .orderByDesc(ReconcileTaskVo::getCreateTime));
     }

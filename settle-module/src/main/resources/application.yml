@@ -5,6 +5,14 @@ spring:
     name: settle-module
   profiles:
     active: dev
+reconcile:
+  channel-code: DEFAULT
+  parse-script-code: DEFAULT_CSV_PARSE
+  compare-script-code: DEFAULT_ORDER_COMPARE
+settle:
+  reconcile:
+    enabled: false
+    required: false
 xxl:
   job:
     enable: true
