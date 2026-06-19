@@ -1,4 +1,6 @@
 #NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
-#Sat Jun 13 18:41:37 CST 2026
+#Fri Jun 19 17:32:21 CST 2026
 xxl-job-core-2.4.0.pom>nexus-aliyun=
+xxl-job-core-2.4.0.jar>central=
 xxl-job-core-2.4.0.jar>nexus-aliyun=
+xxl-job-core-2.4.0.pom>central=

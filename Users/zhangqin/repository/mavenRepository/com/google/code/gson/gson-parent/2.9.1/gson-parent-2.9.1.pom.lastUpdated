@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Jun 19 17:32:04 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781861524811
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781861524544
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact com.google.code.gson\:gson-parent\:pom\:2.9.1 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/com/google/code/gson/gson-parent/2.9.1/gson-parent-2.9.1.pom 502 Bad Gateway
