@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Jun 19 17:15:26 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781860526029
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781860524159
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.codehaus.groovy\:groovy\:jar\:3.0.19 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/codehaus/groovy/groovy/3.0.19/groovy-3.0.19.jar 502 Bad Gateway

@@ -1,0 +1,12 @@
+server:
+  port: 8087
+  servlet:
+    context-path: /reconcile/
+spring:
+  application:
+    name: reconcile-module
+  profiles:
+    active: dev
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true

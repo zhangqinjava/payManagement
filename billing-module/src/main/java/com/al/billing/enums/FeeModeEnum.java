@@ -9,7 +9,8 @@ import lombok.Getter;
 public enum FeeModeEnum {
     RATE(1, "按比例"),
     FIXED(2, "固定金额"),
-    MIXED(3, "混合费率");
+    MIXED(3, "混合费率"),
+    GRADIENT(4, "梯度计费");
 
     private final int code;
     private final String desc;
