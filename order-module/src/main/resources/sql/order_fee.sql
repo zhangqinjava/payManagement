@@ -1,0 +1,5 @@
+ALTER TABLE order_trade
+    ADD COLUMN fee_amount DECIMAL(18,2) DEFAULT NULL COMMENT '前项手续费',
+    ADD COLUMN net_amount DECIMAL(18,2) DEFAULT NULL COMMENT '商户净额',
+    ADD COLUMN fee_flow VARCHAR(64) DEFAULT NULL COMMENT '手续费扣划流水号',
+    ADD COLUMN fee_status INT DEFAULT 0 COMMENT '0未处理 1成功 2失败';
