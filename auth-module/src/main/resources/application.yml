@@ -1,0 +1,23 @@
+server:
+  port: 8088
+  servlet:
+    context-path: /auth/
+spring:
+  application:
+    name: auth-module
+  profiles:
+    active: dev
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+auth:
+  jwt:
+    secret: pay-management-auth-secret-key-2024
+    access-token-minutes: 30
+    refresh-token-hours: 24
+  login:
+    max-fail-count: 5
+    lock-minutes: 30
+    default-allowed-start: "08:00:00"
+    default-allowed-end: "22:00:00"
