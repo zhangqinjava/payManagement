@@ -13,5 +13,7 @@ public interface SplitRuleService {
 
     List<SplitPlanLine> buildDefaultPlan(OrderTradeVo order, BigDecimal feeAmount) throws Exception;
 
+    List<SplitPlanLine> buildPlanAfterUpfrontFee(OrderTradeVo order, BigDecimal netAmount) throws Exception;
+
     List<SplitPlanLine> buildCustomPlan(OrderTradeVo order, OrderSplitRequestDto request);
 }

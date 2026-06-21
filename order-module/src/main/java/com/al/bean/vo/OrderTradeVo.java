@@ -22,6 +22,10 @@ public class OrderTradeVo {
     private LocalDateTime orderDate;
     private String bizType;
     private BigDecimal payAmount;
+    private BigDecimal feeAmount;
+    private BigDecimal netAmount;
+    private String feeFlow;
+    private Integer feeStatus;
     private BigDecimal channelAmount;
     private String channelTrace;
     private String currency;

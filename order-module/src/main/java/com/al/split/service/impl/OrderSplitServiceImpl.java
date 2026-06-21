@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -77,16 +78,35 @@ public class OrderSplitServiceImpl implements OrderSplitService {
             splitRecordMapper.deleteById(exist.getId());
         }
 
-        BigDecimal feeAmount = splitRuleService.calculateFee(order);
-        List<SplitPlanLine> plan = CollectionUtils.isEmpty(request.getReceivers())
-                ? splitRuleService.buildDefaultPlan(order, feeAmount)
-                : splitRuleService.buildCustomPlan(order, request);
+        BigDecimal feeAmount;
+        BigDecimal netAmount;
+        if (order.getFeeAmount() != null && AccountTradeEnum.SUCESS.getCode().equals(order.getFeeStatus())) {
+            feeAmount = order.getFeeAmount();
+            netAmount = order.getNetAmount() != null
+                    ? order.getNetAmount() : order.getPayAmount().subtract(feeAmount);
+        } else {
+            feeAmount = splitRuleService.calculateFee(order);
+            netAmount = order.getPayAmount().subtract(feeAmount);
+        }
+
+        List<SplitPlanLine> plan;
+        if (CollectionUtils.isEmpty(request.getReceivers())) {
+            if (order.getFeeAmount() != null && AccountTradeEnum.SUCESS.getCode().equals(order.getFeeStatus())) {
+                plan = splitRuleService.buildPlanAfterUpfrontFee(order, netAmount);
+            } else {
+                plan = splitRuleService.buildDefaultPlan(order, feeAmount);
+            }
+        } else {
+            plan = splitRuleService.buildCustomPlan(order, request);
+        }
         if (plan.isEmpty()) {
+            if (AccountTradeEnum.SUCESS.getCode().equals(order.getFeeStatus())) {
+                return saveEmptySplitSuccess(order, feeAmount, netAmount);
+            }
             throw new BusinessException("分账计划为空");
         }
 
         String splitNo = TraceUtil.createTraceId();
-        BigDecimal netAmount = order.getPayAmount().subtract(feeAmount);
         OrderSplitRecordVo record = OrderSplitRecordVo.builder()
                 .splitNo(splitNo)
                 .orderNo(order.getOrderNo())
@@ -235,6 +255,25 @@ public class OrderSplitServiceImpl implements OrderSplitService {
         return splitDetailMapper.selectList(Wrappers.lambdaQuery(OrderSplitDetailVo.class)
                 .eq(OrderSplitDetailVo::getSplitNo, splitNo)
                 .orderByAsc(OrderSplitDetailVo::getId));
+    }
+
+    private OrderSplitResultVo saveEmptySplitSuccess(OrderTradeVo order, BigDecimal feeAmount, BigDecimal netAmount) {
+        String splitNo = TraceUtil.createTraceId();
+        OrderSplitRecordVo record = OrderSplitRecordVo.builder()
+                .splitNo(splitNo)
+                .orderNo(order.getOrderNo())
+                .tradeNo(order.getTradeNo())
+                .merchantNo(order.getMerchantNo())
+                .totalAmount(order.getPayAmount())
+                .feeAmount(feeAmount)
+                .netAmount(netAmount == null ? BigDecimal.ZERO : netAmount)
+                .splitStatus(SplitStatusEnum.SUCCESS.getCode())
+                .createTime(LocalDateTime.now())
+                .updateTime(LocalDateTime.now())
+                .build();
+        splitRecordMapper.insert(record);
+        log.info("前项手续费已扣划，无需分账转账 orderNo={}", order.getOrderNo());
+        return toResult(record, Collections.emptyList());
     }
 
     private OrderSplitResultVo toResult(OrderSplitRecordVo record, List<OrderSplitDetailVo> details) {
