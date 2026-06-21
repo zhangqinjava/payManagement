@@ -4,12 +4,14 @@ import com.al.bean.vo.merchant.MerchantSettleConfigVo;
 import com.al.common.Result;
 import com.al.common.ResultEnum;
 import com.al.common.exception.BusinessException;
+import com.al.config.SettleReconcileProperties;
 import com.al.fegin.merchant.MerchantFeginClient;
 import com.al.settle.dto.AccountSettleSnapshot;
 import com.al.settle.entity.SettleRecordVo;
 import com.al.settle.enums.SettleStatusEnum;
 import com.al.settle.service.AccountSettleDataService;
 import com.al.settle.service.SettleDetailService;
+import com.al.settle.service.SettleReconcileService;
 import com.al.settle.service.SettleRecordService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -32,20 +34,27 @@ import java.util.List;
 public class SettleJob {
 
     private static final DateTimeFormatter SETTLE_NO_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private static final DateTimeFormatter RECONCILE_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     private final SettleRecordService settleRecordService;
     private final SettleDetailService settleDetailService;
     private final AccountSettleDataService accountSettleDataService;
+    private final SettleReconcileService settleReconcileService;
+    private final SettleReconcileProperties settleReconcileProperties;
     private final MerchantFeginClient merchantFeginClient;
 
     @Autowired
     public SettleJob(SettleRecordService settleRecordService,
                      SettleDetailService settleDetailService,
                      AccountSettleDataService accountSettleDataService,
+                     SettleReconcileService settleReconcileService,
+                     SettleReconcileProperties settleReconcileProperties,
                      MerchantFeginClient merchantFeginClient) {
         this.settleRecordService = settleRecordService;
         this.settleDetailService = settleDetailService;
         this.accountSettleDataService = accountSettleDataService;
+        this.settleReconcileService = settleReconcileService;
+        this.settleReconcileProperties = settleReconcileProperties;
         this.merchantFeginClient = merchantFeginClient;
     }
 
@@ -126,6 +135,14 @@ public class SettleJob {
         if (settleRecordService.existsRecord(merchantNo, busiType, startDate, endDate)) {
             log.info("商户{}周期{}~{}结算记录已存在，跳过", merchantNo, startDate, endDate);
             return;
+        }
+
+        if (settleReconcileProperties.isEnabled() && settleReconcileProperties.isRequired()) {
+            String reconcileDate = endDate.format(RECONCILE_DATE);
+            if (!settleReconcileService.hasPassedReconcile(merchantNo, reconcileDate)) {
+                log.warn("商户{}在{}未完成对账或存在差异，跳过结算", merchantNo, reconcileDate);
+                return;
+            }
         }
 
         log.info("从账务侧抽取数据，商户号：{}，周期：{}~{}", merchantNo, startDate, endDate);

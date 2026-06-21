@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Fri Jun 19 17:32:10 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1781861530101
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1781861529838
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact org.apache.groovy\:groovy\:pom\:4.0.10 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/org/apache/groovy/groovy/4.0.10/groovy-4.0.10.pom 502 Bad Gateway
