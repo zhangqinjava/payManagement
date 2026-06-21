@@ -18,6 +18,7 @@
         <module>settle-module</module>
         <module>billing-module</module>
         <module>reconcile-module</module>
+        <module>auth-module</module>
     </modules>
 
     <properties>
@@ -92,6 +93,11 @@
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy</artifactId>
                 <version>3.0.19</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>0.9.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
