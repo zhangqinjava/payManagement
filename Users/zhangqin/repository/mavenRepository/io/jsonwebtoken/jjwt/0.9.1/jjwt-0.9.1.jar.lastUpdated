@@ -1,0 +1,5 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Sun Jun 21 18:19:44 CST 2026
+https\://repo.maven.apache.org/maven2/.lastUpdated=1782037184437
+@default-nexus-http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.lastUpdated=1782037181802
+http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/.error=Could not transfer artifact io.jsonwebtoken\:jjwt\:jar\:0.9.1 from/to nexus (http\://nexus.ci.umpay.com.cn/nexus/content/groups/public)\: Transfer failed for http\://nexus.ci.umpay.com.cn/nexus/content/groups/public/io/jsonwebtoken/jjwt/0.9.1/jjwt-0.9.1.jar 502 Bad Gateway
