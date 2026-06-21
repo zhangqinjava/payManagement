@@ -91,6 +91,26 @@ public class SplitRuleServiceImpl implements SplitRuleService {
     }
 
     @Override
+    public List<SplitPlanLine> buildPlanAfterUpfrontFee(OrderTradeVo order, BigDecimal netAmount) throws Exception {
+        MerchantAccountBindVo cashAccount = resolveAccount(order.getMerchantNo(), BusiEnum.CASH.getCode());
+        MerchantAccountBindVo settleAccount = resolveSettleAccount(order.getMerchantNo(), cashAccount);
+        BigDecimal net = netAmount == null ? BigDecimal.ZERO : netAmount;
+        if (net.compareTo(BigDecimal.ZERO) <= 0) {
+            return new ArrayList<>();
+        }
+        List<SplitPlanLine> plan = new ArrayList<>();
+        plan.add(SplitPlanLine.builder()
+                .receiverMerchantNo(settleAccount.getMerchantNo())
+                .receiverAccountNo(settleAccount.getAccountNo())
+                .receiverAccountType(settleAccount.getAccountType())
+                .amount(net)
+                .splitType(SplitReceiverTypeEnum.MERCHANT_SETTLE.getCode())
+                .remark("商户待清分净额")
+                .build());
+        return plan;
+    }
+
+    @Override
     public List<SplitPlanLine> buildCustomPlan(OrderTradeVo order, OrderSplitRequestDto request) {
         List<SplitPlanLine> plan = new ArrayList<>();
         for (SplitReceiverDto receiver : request.getReceivers()) {
