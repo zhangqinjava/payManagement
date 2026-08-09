@@ -1,3 +1,5 @@
+
+
 # pay-management
 
 一套面向 **支付 / 清结算** 场景的 Java 微服务练习项目。你可以把它理解成一家「支付公司」的后台系统：商户在这里入驻，用户在这里下单支付，钱记在账户里，手续费单独算，最后按周期结算，还能和渠道对账。
@@ -46,6 +48,7 @@ flowchart LR
 | 模块 | 是否独立启动 | 默认端口 | 路径前缀 | 一句话说明 |
 |------|:------------:|---------:|----------|------------|
 | [account-module](#account-module账务模块) | ✅ | 8081 | `/account/` | 管钱：开户、上账、下账、冻结、转账 |
+| [auth-module](#auth-module认证鉴权模块) | ✅ | 8088 | `/auth/` | 认证鉴权：登录、JWT 签发、权限控制 |
 | [merchant-module](#merchant-module商户模块) | ✅ | 8082 | `/merchant/` | 管商户：入驻、绑账户、费率、结算配置 |
 | [order-module](#order-module订单模块) | ✅ | 8083 | `/order/` | 管交易：下单、支付、退款、分账 |
 | [gateway-module](#gateway-module网关模块) | ✅ | 8084 | `/gateway/` | 统一入口，路由到各后端服务 |
@@ -95,6 +98,28 @@ flowchart LR
 - `POST /account/operation/down` — 下账
 - `POST /account/operation/transfer` — 转账
 - `POST /account/admin/reconcile/daily` — 账务日核对
+
+---
+
+### auth-module（认证鉴权模块）
+
+**它是干什么的？**
+
+负责全局的用户认证与权限校验。基于 Spring Security + JWT 实现无状态登录，支持 RBAC 权限模型。
+
+**核心能力：**
+
+- 用户登录 / 登出
+- JWT Access/Refresh Token 签发与刷新
+- 基于 `@RequiresPermission` 注解的接口级权限拦截
+- 默认初始化超级管理员账号（admin / admin123）
+
+**主要接口示例：**
+
+- `POST /auth/login` — 用户登录
+- `POST /auth/logout` — 退出登录
+- `POST /auth/refresh` — 刷新 Token
+- `GET /auth/me` — 获取当前用户信息
 
 ---
 
@@ -362,7 +387,7 @@ def compare(ctx, localRows, remoteRows) {
 | order 分账 | 订单库 | `order_split.sql` |
 | settle | 结算库 | `settle_detail.sql` |
 
-账户、商户、订单等模块的数据库配置见各模块 `application-dev.yml`。
+账户、商户、订单、认证等模块的数据库配置见各模块 `application-dev.yml`。
 
 ### 3. 编译
 
@@ -373,6 +398,9 @@ mvn clean install -DskipTests
 ### 4. 启动服务（建议顺序）
 
 ```bash
+# 0. 认证鉴权
+cd auth-module && mvn spring-boot:run
+
 # 1. 账务
 cd account-module && mvn spring-boot:run
 
@@ -423,6 +451,7 @@ POST http://localhost:8087/reconcile/task/execute
 ```
 pay-management/
 ├── account-module/      # 账务
+├── auth-module/         # 认证鉴权
 ├── merchant-module/     # 商户
 ├── order-module/        # 订单 + 分账
 ├── gateway-module/      # 网关
